@@ -1,0 +1,17 @@
+packages:
+  - 'client'
+  - 'server'
+allowBuilds:
+  '@google/genai': true
+  '@tailwindcss/oxide': true
+  esbuild: true
+  protobufjs: true
+supportedArchitectures:
+  os:
+    - linux
+    - win32
+  cpu:
+    - x64
+    - arm64
+  libc:
+    - glibc
