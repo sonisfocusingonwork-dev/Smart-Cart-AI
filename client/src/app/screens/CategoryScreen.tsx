@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { MonogramPattern } from "../components/ui/MonogramPattern";
 import { api } from "../api";
 import { Package, Plus, X, Circle, CheckCircle2 } from "lucide-react";
 import {
@@ -56,10 +57,10 @@ export function CategoryScreen({
 
   return (
     <section className="flex h-full min-h-0 flex-col overflow-hidden bg-[#F8FAFC]">
-      <header className="flex h-20 shrink-0 items-center gap-5 border-b border-[#F97316]/55 bg-[#0F172A] px-7 text-white shadow-md">
+      <header className="flex h-20 shrink-0 items-center gap-5 border-b border-[#15803D]/55 bg-[#FFFFFF] px-7 text-[#334155] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] relative overflow-hidden font-black tracking-wide"><MonogramPattern />
         <Back onClick={back} dark />
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[.18em] text-[#F97316]">
+          <p className="text-[10px] font-black uppercase tracking-[.18em] text-[#15803D]">
             Danh mục siêu thị
           </p>
           <h1 className="text-2xl font-black">{categoryName}</h1>
@@ -73,14 +74,14 @@ export function CategoryScreen({
           />
 
           {showListPopup && (
-            <div className="absolute right-0 top-14 z-50 w-[300px] rounded-3xl border border-[#F97316] bg-[#FEF9ED] p-5 shadow-[0_16px_36px_rgba(17,17,17,.25)] backdrop-blur-xl animate-fadeIn text-[#0F172A]">
-              <div className="flex items-center justify-between border-b border-[#F97316]/30 pb-2 mb-3">
-                <span className="font-black italic tracking-widest text-base text-[#EA580C]">
+            <div className="absolute right-0 top-14 z-50 w-[300px] rounded-3xl border border-[#15803D] bg-[#FEF9ED] p-5 shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]  animate-fadeIn text-[#334155]">
+              <div className="flex items-center justify-between border-b border-[#15803D]/30 pb-2 mb-3">
+                <span className="font-black italic tracking-widest text-base text-[#15803D]">
                   shopping list
                 </span>
                 <button
                   onClick={toggleListPopup}
-                  className="rounded-lg p-1 hover:bg-black/5"
+                  className="rounded-2xl p-1 hover:bg-[#334155]/5"
                 >
                   <X size={16} />
                 </button>
@@ -98,9 +99,9 @@ export function CategoryScreen({
                   value={localInput}
                   onChange={(e) => setLocalInput(e.target.value)}
                   placeholder="Thêm việc cần mua..."
-                  className="h-8 flex-1 rounded-lg border border-[#CBD5E1] bg-white px-2.5 text-xs font-bold outline-none focus:border-[#F97316]"
+                  className="h-8 flex-1 rounded-2xl border border-[#E2E8F0] bg-white px-2.5 text-xs font-bold outline-none focus:border-[#15803D]"
                 />
-                <button className="h-8 rounded-lg bg-[#F97316] px-3 text-xs font-black text-white">
+                <button className="h-8 rounded-2xl bg-[#15803D] shadow-md px-3 text-xs font-black text-white">
                   +
                 </button>
               </form>
@@ -115,16 +116,16 @@ export function CategoryScreen({
                       {m.checked ? (
                         <CheckCircle2
                           size={18}
-                          className="text-[#F97316] shrink-0"
+                          className="text-[#15803D] shrink-0"
                         />
                       ) : (
                         <Circle
                           size={18}
-                          className="text-[#CBD5E1] group-hover:text-[#F97316] shrink-0"
+                          className="text-[#475569] group-hover:text-[#15803D] shrink-0"
                         />
                       )}
                       <span
-                        className={`text-xs font-extrabold ${m.checked ? "line-through text-[#94A3B8]" : "text-[#0F172A]"}`}
+                        className={`text-xs font-extrabold ${m.checked ? "line-through text-[#94A3B8]" : "text-[#334155]"}`}
                       >
                         {m.name}
                       </span>
@@ -152,15 +153,15 @@ export function CategoryScreen({
               return (
                 <article
                   key={p.name}
-                  className="overflow-hidden rounded-3xl border border-[#CBD5E1] bg-white shadow-[0_10px_24px_rgba(17,17,17,.06)] transition hover:border-[#F97316] hover:shadow-[0_10px_24px_rgba(249,115,22,.12)]"
+                  className="overflow-hidden rounded-3xl border border-[#E2E8F0] bg-white shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] transition hover:border-[#15803D] hover:shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]"
                 >
                   <div className={`relative h-28 ${p.tone}`}>
-                    <span className="absolute left-3 top-3 rounded-full bg-[#0F172A]/85 px-3 py-1 text-[10px] font-black text-[#F97316]">
+                    <span className="absolute left-3 top-3 rounded-full bg-[#F5F5E6] px-3 py-1 text-[10px] font-black text-[#15803D]">
                       CÓ SẴN
                     </span>
                   </div>
                   <div className="p-5">
-                    <h3 className="text-lg font-extrabold text-[#0F172A] truncate">
+                    <h3 className="text-lg font-extrabold text-[#334155] truncate">
                       {p.name}
                     </h3>
                     <div className="mt-2 flex items-end gap-2">
@@ -169,28 +170,28 @@ export function CategoryScreen({
                           {formatMoney(p.oldPrice)}
                         </span>
                       )}
-                      <b className="text-2xl text-[#F97316]">
+                      <b className="text-2xl text-[#15803D]">
                         {formatMoney(p.price)}
                       </b>
                     </div>
                     {cartItem ? (
-                      <div className="mt-4 flex h-12 w-full items-center justify-between overflow-hidden rounded-xl border border-[#F97316] bg-[#F1F5F9] shadow-[0_0_12px_rgba(249,115,22,.15)] transition-all">
+                      <div className="mt-4 flex h-12 w-full items-center justify-between overflow-hidden rounded-2xl border border-[#15803D] bg-[#F1F5F9] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] transition-all">
                         <button
                           onClick={() =>
                             cartItem.qty === 1
                               ? remove(cartItem.id)
                               : update(cartItem.id, -1)
                           }
-                          className="flex h-full w-14 items-center justify-center text-xl font-black text-[#0F172A] transition-colors hover:bg-[#CBD5E1]/40"
+                          className="flex h-full w-14 items-center justify-center text-xl font-black text-[#334155] transition-colors hover:bg-[#CBD5E1]/40"
                         >
                           −
                         </button>
-                        <span className="flex-1 text-center text-lg font-black text-[#F97316]">
+                        <span className="flex-1 text-center text-lg font-black text-[#15803D]">
                           {cartItem.qty}
                         </span>
                         <button
                           onClick={() => update(cartItem.id, 1)}
-                          className="flex h-full w-14 items-center justify-center text-xl font-black text-[#0F172A] transition-colors hover:bg-[#CBD5E1]/40"
+                          className="flex h-full w-14 items-center justify-center text-xl font-black text-[#334155] transition-colors hover:bg-[#CBD5E1]/40"
                         >
                           +
                         </button>
@@ -198,7 +199,7 @@ export function CategoryScreen({
                     ) : (
                       <button
                         onClick={() => add(p)}
-                        className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#F97316] text-base font-extrabold text-[#0F172A] transition-transform active:scale-95 hover:scale-[1.02] shadow-md"
+                        className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#15803D] text-base font-extrabold text-white transition-transform active:scale-95 hover:scale-[1.02] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]"
                       >
                         <Plus size={19} />
                         Thêm vào giỏ

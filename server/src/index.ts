@@ -19,6 +19,8 @@ import staffRoutes from './routes/staff.routes.js';
 import branchRoutes from './routes/branch.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
 import ticketRoutes from './routes/ticket.routes.js';
+import gatewayRoutes from './routes/gateway.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
 import { seedDatabase } from './config/seed.js';
 
@@ -60,6 +62,8 @@ app.use('/api/group-sessions', groupRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api/gateway', gatewayRoutes);
+app.use('/api/auth', authRoutes);
 
 // API kiểm tra trạng thái
 app.get('/api/health', (req, res) => {
@@ -90,6 +94,11 @@ io.on('connection', (socket) => {
     } catch (err) {
       console.error('Error saving support ticket:', err);
     }
+  });
+
+  socket.on('join-qr-room', (sessionId) => {
+    socket.join(`qr-${sessionId}`);
+    console.log(`Socket ${socket.id} joined QR room: qr-${sessionId}`);
   });
 
   socket.on('disconnect', () => {

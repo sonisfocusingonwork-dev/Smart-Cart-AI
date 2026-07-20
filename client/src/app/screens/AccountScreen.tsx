@@ -87,15 +87,15 @@ export function AccountScreen({
           />
 
           {showListPopup && (
-            <div className="absolute right-0 top-14 z-50 w-[310px] rounded-3xl border border-[#F97316] bg-[#FEF9ED] p-5 text-[#0F172A] shadow-[0_16px_36px_rgba(17,17,17,.25)] backdrop-blur-xl">
-              <div className="mb-3 flex items-center justify-between border-b border-[#F97316]/30 pb-2">
-                <span className="text-base font-black italic tracking-widest text-[#EA580C]">
+            <div className="absolute right-0 top-14 z-50 w-[310px] rounded-3xl border border-[#15803D] bg-[#FEF9ED] p-5 text-[#334155] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] ">
+              <div className="mb-3 flex items-center justify-between border-b border-[#15803D]/30 pb-2">
+                <span className="text-base font-black italic tracking-widest text-[#15803D]">
                   shopping list
                 </span>
                 <button
                   type="button"
                   onClick={toggleListPopup}
-                  className="rounded-lg p-1 hover:bg-black/5"
+                  className="rounded-2xl p-1 hover:bg-[#334155]/5"
                   aria-label="Đóng shopping list"
                 >
                   <X size={16} />
@@ -115,11 +115,11 @@ export function AccountScreen({
                   value={localInput}
                   onChange={(event) => setLocalInput(event.target.value)}
                   placeholder="Thêm việc cần mua..."
-                  className="h-8 min-w-0 flex-1 rounded-lg border border-[#CBD5E1] bg-white px-2.5 text-xs font-bold outline-none focus:border-[#F97316]"
+                  className="h-8 min-w-0 flex-1 rounded-2xl border border-[#E2E8F0] bg-white px-2.5 text-xs font-bold outline-none focus:border-[#15803D]"
                 />
                 <button
                   type="submit"
-                  className="h-8 rounded-lg bg-[#F97316] px-3 text-xs font-black text-white"
+                  className="h-8 rounded-2xl bg-[#15803D] shadow-md px-3 text-xs font-black text-white"
                 >
                   +
                 </button>
@@ -140,16 +140,16 @@ export function AccountScreen({
                     {item.checked ? (
                       <CheckCircle2
                         size={18}
-                        className="shrink-0 text-[#F97316]"
+                        className="shrink-0 text-[#15803D]"
                       />
                     ) : (
                       <Circle
                         size={18}
-                        className="shrink-0 text-[#CBD5E1] group-hover:text-[#F97316]"
+                        className="shrink-0 text-[#475569] group-hover:text-[#15803D]"
                       />
                     )}
                     <span
-                      className={`min-w-0 flex-1 truncate text-xs font-extrabold ${item.checked ? "text-[#94A3B8] line-through" : "text-[#0F172A]"}`}
+                      className={`min-w-0 flex-1 truncate text-xs font-extrabold ${item.checked ? "text-[#94A3B8] line-through" : "text-[#334155]"}`}
                     >
                       {item.name}
                     </span>
@@ -162,16 +162,16 @@ export function AccountScreen({
 
         <div className="mx-auto max-w-5xl">
           <div className="mb-5">
-            <p className="text-xs font-black uppercase tracking-[.17em] text-[#EA580C]">
+            <p className="text-xs font-black uppercase tracking-[.17em] text-[#15803D]">
               Phiên mua sắm hiện tại
             </p>
-            <h1 className="mt-1 text-3xl font-black text-[#0F172A]">
+            <h1 className="mt-1 text-3xl font-black text-[#334155]">
               Tài khoản
             </h1>
           </div>
 
           {notice && (
-            <div className="mb-4 flex items-center justify-between rounded-xl border border-[#F97316] bg-[#F1F5F9] px-4 py-3 text-sm font-bold">
+            <div className="mb-4 flex items-center justify-between rounded-2xl border border-[#15803D] bg-[#F1F5F9] px-4 py-3 text-sm font-bold">
               <span>{notice}</span>
               <button
                 type="button"
@@ -186,35 +186,35 @@ export function AccountScreen({
           {authenticated ? (
             <div className="grid grid-cols-[.9fr_1.1fr] gap-6">
               <div className="space-y-5">
-                <section className="rounded-3xl border border-[#F97316]/65 bg-[#0F172A] p-7 text-white shadow-[0_0_24px_rgba(249,115,22,.16)]">
+                <section className="rounded-3xl border border-[#15803D]/65 bg-[#F5F5E6] p-7 text-[#334155] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]">
                   <div className="flex items-center gap-5">
                     <GoldIcon className="h-20 w-20 rounded-full">
                       <span className="text-2xl font-black">{initials}</span>
                     </GoldIcon>
                     <div className="min-w-0">
-                      <p className="text-xs font-black uppercase tracking-[.16em] text-[#F97316]">
+                      <p className="text-xs font-black uppercase tracking-[.16em] text-[#15803D]">
                         Hạng thành viên · {memberTier}
                       </p>
                       <h2 className="mt-2 truncate text-3xl font-black">
                         {memberName}
                       </h2>
-                      <p className="mt-1 text-sm text-[#CBD5E1]">
+                      <p className="mt-1 text-sm text-[#475569]">
                         Mã thành viên · SC-102984
                       </p>
                     </div>
                   </div>
-                  <p className="mt-7 border-t border-white/15 pt-4 text-sm italic text-[#CBD5E1]">
+                  <p className="mt-7 border-t border-[#E2E8F0] pt-4 text-sm italic text-[#475569]">
                     Thông tin tài khoản được đồng bộ với ứng dụng Smart Cart.
                   </p>
                 </section>
 
-                <section className="rounded-3xl border border-[#F97316]/65 bg-white p-6 shadow-[0_12px_26px_rgba(17,17,17,.08)]">
+                <section className="rounded-3xl border border-[#15803D]/65 bg-white p-6 shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[.16em] text-[#EA580C]">
+                      <p className="text-xs font-black uppercase tracking-[.16em] text-[#15803D]">
                         Smart Points
                       </p>
-                      <h2 className="mt-1 text-3xl font-black text-[#0F172A]">
+                      <h2 className="mt-1 text-3xl font-black text-[#334155]">
                         {memberPoints.toLocaleString("vi-VN")}{" "}
                         <span className="text-base">điểm</span>
                       </h2>
@@ -226,30 +226,30 @@ export function AccountScreen({
                   <div className="mt-6">
                     <div className="mb-2 flex justify-between text-sm font-bold">
                       <span className="text-[#475569]">Gold</span>
-                      <span className="text-[#EA580C]">{progress}%</span>
+                      <span className="text-[#15803D]">{progress}%</span>
                     </div>
                     <div className="h-3 overflow-hidden rounded-full bg-[#F1F5F9]">
                       <div
-                        className="h-full rounded-full bg-[#F97316] shadow-[0_0_12px_rgba(249,115,22,.6)]"
+                        className="h-full rounded-full bg-gradient-to-r from-[#8CB867] to-[#15803D] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
                     <div className="mt-3 flex justify-between text-xs font-extrabold">
                       <span className="text-[#475569]">Silver</span>
-                      <span className="text-[#EA580C]">Gold</span>
+                      <span className="text-[#15803D]">Gold</span>
                       <span className="text-[#475569]">Platinum</span>
                     </div>
-                    <p className="mt-4 rounded-xl bg-[#F1F5F9] px-3 py-2 text-sm font-bold text-[#0F172A]">
+                    <p className="mt-4 rounded-2xl bg-[#F1F5F9] px-3 py-2 text-sm font-bold text-[#334155]">
                       {pointsToPlatinum > 0 ? (
                         <>
                           Còn{" "}
-                          <span className="text-[#EA580C]">
+                          <span className="text-[#15803D]">
                             {pointsToPlatinum.toLocaleString("vi-VN")} điểm
                           </span>{" "}
                           để lên hạng Platinum
                         </>
                       ) : (
-                        <span className="text-emerald-600">
+                        <span className="text-[#15803D]">
                           Bạn đã đủ điểm lên hạng Platinum.
                         </span>
                       )}
@@ -258,57 +258,57 @@ export function AccountScreen({
                 </section>
               </div>
 
-              <section className="rounded-3xl border border-[#CBD5E1] bg-white p-6 shadow-[0_10px_24px_rgba(17,17,17,.06)]">
-                <p className="text-xs font-black uppercase tracking-[.16em] text-[#EA580C]">
+              <section className="rounded-3xl border border-[#E2E8F0] bg-white p-6 shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]">
+                <p className="text-xs font-black uppercase tracking-[.16em] text-[#15803D]">
                   Dịch vụ trong phiên
                 </p>
-                <h2 className="mt-1 text-2xl font-black text-[#0F172A]">
+                <h2 className="mt-1 text-2xl font-black text-[#334155]">
                   Mua sắm của bạn
                 </h2>
                 <div className="mt-6 space-y-4">
                   <button
                     type="button"
                     onClick={() => navigate("history")}
-                    className="flex min-h-[94px] w-full items-center gap-4 rounded-2xl border border-[#CBD5E1] bg-white px-5 text-left transition-colors hover:border-[#F97316] hover:bg-[#F1F5F9]"
+                    className="flex min-h-[94px] w-full items-center gap-4 rounded-2xl border border-[#E2E8F0] bg-white px-5 text-left transition-colors hover:border-[#15803D] hover:bg-[#F1F5F9]"
                   >
                     <GoldIcon className="h-12 w-12">
                       <History size={22} />
                     </GoldIcon>
                     <span>
-                      <span className="block text-lg font-extrabold text-[#0F172A]">
+                      <span className="block text-lg font-extrabold text-[#334155]">
                         Lịch sử mua sắm
                       </span>
                       <span className="block text-sm text-[#475569]">
                         {purchaseHistory.length} đơn hàng đã hoàn tất
                       </span>
                     </span>
-                    <ChevronRight className="ml-auto text-[#EA580C]" />
+                    <ChevronRight className="ml-auto text-[#15803D]" />
                   </button>
                   <button
                     type="button"
                     onClick={() => navigate("offers")}
-                    className="flex min-h-[112px] w-full items-center gap-4 rounded-2xl border border-[#CBD5E1] bg-white px-5 text-left transition-colors hover:border-[#F97316] hover:bg-[#F1F5F9]"
+                    className="flex min-h-[112px] w-full items-center gap-4 rounded-2xl border border-[#E2E8F0] bg-white px-5 text-left transition-colors hover:border-[#15803D] hover:bg-[#F1F5F9]"
                   >
                     <GoldIcon className="h-12 w-12">
                       <Gift size={22} />
                     </GoldIcon>
                     <span>
-                      <span className="flex items-center gap-2 text-lg font-extrabold text-[#0F172A]">
+                      <span className="flex items-center gap-2 text-lg font-extrabold text-[#334155]">
                         Ưu đãi đang áp dụng{" "}
-                        <Check className="text-[#EA580C]" size={20} />
+                        <Check className="text-[#15803D]" size={20} />
                       </span>
-                      <span className="mt-1 block text-sm font-medium leading-relaxed text-[#EA580C]">
+                      <span className="mt-1 block text-sm font-medium leading-relaxed text-[#15803D]">
                         Xem mã còn hạn và điều kiện phù hợp với giỏ hàng hiện
                         tại.
                       </span>
                     </span>
-                    <ChevronRight className="ml-auto text-[#EA580C]" />
+                    <ChevronRight className="ml-auto text-[#15803D]" />
                   </button>
                 </div>
                 <button
                   type="button"
                   onClick={logout}
-                  className="mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-2xl border border-[#DC2626] bg-[#FEF2F2] text-lg font-black text-[#DC2626] transition-colors hover:bg-[#FEE2E2]"
+                  className="mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-2xl border border-[#15803D] bg-[#FEF2F2] text-lg font-black text-[#15803D] transition-colors hover:bg-[#FEE2E2]"
                 >
                   <ArrowLeft size={20} />
                   Đăng xuất tài khoản
@@ -316,19 +316,19 @@ export function AccountScreen({
               </section>
             </div>
           ) : (
-            <section className="mx-auto max-w-lg rounded-3xl border border-[#F97316]/65 bg-[#0F172A] p-8 text-center text-white shadow-[0_0_24px_rgba(249,115,22,.16)]">
+            <section className="mx-auto max-w-lg rounded-3xl border border-[#15803D]/65 bg-[#F5F5E6] p-8 text-center text-[#334155] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]">
               <GoldIcon className="mx-auto h-16 w-16 rounded-full">
                 <UserRound size={30} />
               </GoldIcon>
               <h2 className="mt-5 text-2xl font-black">Khách mua sắm</h2>
-              <p className="mt-2 text-[#CBD5E1]">
+              <p className="mt-2 text-[#475569]">
                 Đăng nhập để xem điểm tích lũy, lịch sử đơn hàng và ưu đãi cá
                 nhân.
               </p>
               <button
                 type="button"
                 onClick={onSignIn}
-                className="mt-6 rounded-xl bg-[#F97316] px-6 py-3 font-black text-[#0F172A]"
+                className="mt-6 rounded-2xl bg-[#15803D] shadow-md px-6 py-3 font-black text-white"
               >
                 Đăng nhập
               </button>

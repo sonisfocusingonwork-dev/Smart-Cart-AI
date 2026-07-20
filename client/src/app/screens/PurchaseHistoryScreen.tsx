@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MonogramPattern } from "../components/ui/MonogramPattern";
 import { ChevronRight, History, Search, Star, X } from "lucide-react";
 import {
   formatMoney,
@@ -75,23 +76,23 @@ export function PurchaseHistoryScreen({
           setNotice("Yêu cầu hỗ trợ về lịch sử đơn hàng đã được gửi.")
         }
       />
-      <header className="flex h-[82px] shrink-0 items-center gap-5 border-b border-[#F97316]/55 bg-[#0F172A] px-7 text-white shadow-md">
+      <header className="flex h-[82px] shrink-0 items-center gap-5 border-b border-[#15803D]/55 bg-[#FFFFFF] px-7 text-[#334155] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] relative overflow-hidden font-black tracking-wide"><MonogramPattern />
         <Back onClick={back} dark />
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[.18em] text-[#F97316]">
+          <p className="text-[10px] font-black uppercase tracking-[.18em] text-[#15803D]">
             Tài khoản thành viên
           </p>
           <h1 className="text-2xl font-black">Lịch sử mua sắm</h1>
         </div>
-        <div className="ml-auto flex items-center gap-2 rounded-xl border border-[#F97316]/60 bg-white/10 px-4 py-2 text-sm font-black">
-          <Star size={17} className="text-[#F97316]" fill="currentColor" />
+        <div className="ml-auto flex items-center gap-2 rounded-2xl border border-[#15803D]/60 bg-white px-4 py-2 text-sm font-black">
+          <Star size={17} className="text-[#15803D]" fill="currentColor" />
           {memberPoints.toLocaleString("vi-VN")} điểm
         </div>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto p-7 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="mx-auto max-w-6xl">
           {notice && (
-            <div className="mb-4 flex items-center justify-between rounded-xl border border-[#F97316] bg-white px-4 py-3 text-sm font-bold">
+            <div className="mb-4 flex items-center justify-between rounded-2xl border border-[#15803D] bg-white px-4 py-3 text-sm font-bold">
               <span>{notice}</span>
               <button onClick={() => setNotice("")}>
                 <X size={17} />
@@ -99,27 +100,27 @@ export function PurchaseHistoryScreen({
             </div>
           )}
           <div className="grid grid-cols-3 gap-4">
-            <div className="rounded-2xl border border-[#CBD5E1] bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border border-[#E2E8F0] bg-white shadow-sm border border-[#E2E8F0] p-5 shadow-sm">
               <p className="text-xs font-black uppercase tracking-[.14em] text-[#64748B]">
                 Đơn đã hoàn tất
               </p>
-              <b className="mt-2 block text-3xl text-[#0F172A]">
+              <b className="mt-2 block text-3xl text-[#334155]">
                 {history.length}
               </b>
             </div>
-            <div className="rounded-2xl border border-[#CBD5E1] bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border border-[#E2E8F0] bg-white shadow-sm border border-[#E2E8F0] p-5 shadow-sm">
               <p className="text-xs font-black uppercase tracking-[.14em] text-[#64748B]">
                 Tổng chi tiêu
               </p>
-              <b className="mt-2 block text-3xl text-[#EA580C]">
+              <b className="mt-2 block text-3xl text-[#15803D]">
                 {formatMoney(totalSpent)}
               </b>
             </div>
-            <div className="rounded-2xl border border-[#F97316]/60 bg-[#FFF7ED] p-5 shadow-sm">
-              <p className="text-xs font-black uppercase tracking-[.14em] text-[#EA580C]">
+            <div className="rounded-2xl border border-[#15803D]/60 bg-[#FFF7ED] p-5 shadow-sm">
+              <p className="text-xs font-black uppercase tracking-[.14em] text-[#15803D]">
                 Điểm nhận từ các đơn
               </p>
-              <b className="mt-2 block text-3xl text-[#0F172A]">
+              <b className="mt-2 block text-3xl text-[#334155]">
                 +{totalPointsEarned.toLocaleString("vi-VN")}
               </b>
             </div>
@@ -133,15 +134,15 @@ export function PurchaseHistoryScreen({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Tìm theo mã đơn, cửa hàng hoặc sản phẩm..."
-              className="h-12 w-full rounded-2xl border border-[#CBD5E1] bg-white pl-12 pr-4 text-sm font-semibold outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20"
+              className="h-12 w-full rounded-2xl border border-[#E2E8F0] bg-white pl-12 pr-4 text-sm font-semibold outline-none focus:border-[#15803D] focus:ring-2 focus:ring-[#D3524B]/20"
             />
           </div>
           <div className="mt-6 space-y-7 pb-8">
             {Object.entries(groupedHistory).map(([month, orders]) => (
               <section key={month}>
                 <div className="mb-3 flex items-center gap-3">
-                  <span className="h-3 w-3 rounded-full bg-[#F97316]" />
-                  <h2 className="text-lg font-black text-[#0F172A]">{month}</h2>
+                  <span className="h-3 w-3 rounded-full bg-[#15803D]" />
+                  <h2 className="text-lg font-black text-[#334155]">{month}</h2>
                   <span className="text-xs font-bold text-[#64748B]">
                     {orders.length} đơn hàng
                   </span>
@@ -163,7 +164,7 @@ export function PurchaseHistoryScreen({
                     return (
                       <article
                         key={order.id}
-                        className={`overflow-hidden rounded-3xl border bg-white shadow-sm transition ${expanded ? "border-[#F97316] shadow-[0_12px_26px_rgba(249,115,22,.12)]" : "border-[#CBD5E1] hover:border-[#F97316]/70"}`}
+                        className={`overflow-hidden rounded-3xl border bg-white shadow-sm transition ${expanded ? "border-[#15803D] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]" : "border-[#E2E8F0] hover:border-[#15803D]/70"}`}
                       >
                         <button
                           onClick={() =>
@@ -176,14 +177,14 @@ export function PurchaseHistoryScreen({
                           </GoldIcon>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <b className="text-lg text-[#0F172A]">
+                              <b className="text-lg text-[#334155]">
                                 {order.id}
                               </b>
                               <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-700">
                                 HOÀN TẤT
                               </span>
                             </div>
-                            <p className="mt-1 text-sm font-bold text-[#EA580C]">
+                            <p className="mt-1 text-sm font-bold text-[#15803D]">
                               {formatPurchaseDate(order.completedAt)}
                             </p>
                             <p className="mt-1 truncate text-xs font-semibold text-[#64748B]">
@@ -191,15 +192,15 @@ export function PurchaseHistoryScreen({
                             </p>
                           </div>
                           <div className="text-right">
-                            <b className="block text-xl text-[#0F172A]">
+                            <b className="block text-xl text-[#334155]">
                               {formatMoney(order.total)}
                             </b>
-                            <span className="mt-1 block text-xs font-black text-emerald-600">
+                            <span className="mt-1 block text-xs font-black text-[#15803D]">
                               +{order.pointsEarned} điểm
                             </span>
                           </div>
                           <ChevronRight
-                            className={`text-[#EA580C] transition-transform ${expanded ? "rotate-90" : ""}`}
+                            className={`text-[#15803D] transition-transform ${expanded ? "rotate-90" : ""}`}
                           />
                         </button>
                         {expanded && (
@@ -213,9 +214,9 @@ export function PurchaseHistoryScreen({
                                   {order.items.map((item) => (
                                     <div
                                       key={item.name}
-                                      className="flex items-center justify-between rounded-xl border border-[#E2E8F0] bg-white px-4 py-3"
+                                      className="flex items-center justify-between rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3"
                                     >
-                                      <span className="font-bold text-[#0F172A]">
+                                      <span className="font-bold text-[#334155]">
                                         {item.name}{" "}
                                         <span className="text-[#64748B]">
                                           × {item.qty}
@@ -228,7 +229,7 @@ export function PurchaseHistoryScreen({
                                   ))}
                                 </div>
                               </div>
-                              <aside className="rounded-2xl border border-[#CBD5E1] bg-white p-4">
+                              <aside className="rounded-2xl border border-[#E2E8F0] bg-white p-4">
                                 <div className="flex justify-between text-sm">
                                   <span className="text-[#64748B]">
                                     Tạm tính
@@ -242,7 +243,7 @@ export function PurchaseHistoryScreen({
                                       ? ` · ${order.appliedVoucherCode}`
                                       : ""}
                                   </span>
-                                  <b className="text-emerald-600">
+                                  <b className="text-[#15803D]">
                                     −{formatMoney(order.discount)}
                                   </b>
                                 </div>
@@ -250,16 +251,16 @@ export function PurchaseHistoryScreen({
                                   <span className="text-[#64748B]">Thuế</span>
                                   <b>{formatMoney(orderTax)}</b>
                                 </div>
-                                <div className="my-4 border-t border-dashed border-[#CBD5E1]" />
+                                <div className="my-4 border-t border-dashed border-[#E2E8F0]" />
                                 <div className="flex justify-between">
                                   <span className="font-black">
                                     Đã thanh toán
                                   </span>
-                                  <b className="text-xl text-[#EA580C]">
+                                  <b className="text-xl text-[#15803D]">
                                     {formatMoney(order.total)}
                                   </b>
                                 </div>
-                                <p className="mt-4 rounded-xl bg-[#FFF7ED] px-3 py-2 text-xs font-bold text-[#EA580C]">
+                                <p className="mt-4 rounded-2xl bg-[#FFF7ED] px-3 py-2 text-xs font-bold text-[#15803D]">
                                   Thời gian hoàn tất:{" "}
                                   {formatPurchaseDate(order.completedAt)}
                                 </p>
@@ -274,8 +275,8 @@ export function PurchaseHistoryScreen({
               </section>
             ))}
             {filteredHistory.length === 0 && (
-              <div className="rounded-3xl border border-dashed border-[#CBD5E1] bg-white p-12 text-center">
-                <History size={52} className="mx-auto text-[#CBD5E1]" />
+              <div className="rounded-3xl border border-dashed border-[#E2E8F0] bg-white p-12 text-center">
+                <History size={52} className="mx-auto text-[#475569]" />
                 <h2 className="mt-4 text-xl font-black">
                   Không tìm thấy đơn hàng
                 </h2>

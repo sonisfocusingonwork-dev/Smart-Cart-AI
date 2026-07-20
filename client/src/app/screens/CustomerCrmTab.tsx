@@ -38,7 +38,7 @@ export const CustomerCrmTab = () => {
       case 'Platinum': return <Crown size={16} className="text-purple-400" />;
       case 'Gold': return <Award size={16} className="text-yellow-400" />;
       case 'Silver': return <Shield size={16} className="text-slate-300" />;
-      default: return <Star size={16} className="text-orange-400" />;
+      default: return <Star size={16} className="text-[#15803D]" />;
     }
   };
 
@@ -47,7 +47,7 @@ export const CustomerCrmTab = () => {
       case 'Platinum': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
       case 'Gold': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
       case 'Silver': return 'bg-slate-500/10 text-slate-300 border-slate-500/20';
-      default: return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      default: return 'bg-[#15803D]/10 text-[#15803D] border-[#15803D]/20';
     }
   };
 
@@ -67,16 +67,16 @@ export const CustomerCrmTab = () => {
             placeholder="Tìm theo tên, SĐT..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#1E293B] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all text-sm"
+            className="w-full bg-[#1E293B] border border-[#E2E8F0] rounded-2xl pl-10 pr-4 py-2.5 text-white focus:border-[#15803D] focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all text-sm"
           />
           <Search size={16} className="absolute left-3.5 top-3 text-slate-400" />
         </div>
       </div>
 
-      <div className="flex-1 bg-[#1E293B] border border-white/5 rounded-2xl overflow-hidden flex flex-col">
+      <div className="flex-1 bg-[#1E293B] border border-[#E2E8F0] rounded-2xl overflow-hidden flex flex-col">
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left text-sm text-slate-300">
-            <thead className="text-xs text-slate-400 uppercase bg-black/20 border-b border-white/5 sticky top-0 z-10">
+            <thead className="text-xs text-slate-400 uppercase bg-black/20 border-b border-[#E2E8F0] sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-4 font-semibold whitespace-nowrap">Khách hàng</th>
                 <th className="px-6 py-4 font-semibold whitespace-nowrap">Liên hệ</th>
@@ -114,7 +114,7 @@ export const CustomerCrmTab = () => {
                     <td className="px-6 py-4 text-right font-semibold text-white">
                       {customer.purchaseHistory?.length || 0}
                     </td>
-                    <td className="px-6 py-4 text-right font-semibold text-orange-400">
+                    <td className="px-6 py-4 text-right font-semibold text-[#15803D]">
                       {customer.points.toLocaleString()}
                     </td>
                   </tr>

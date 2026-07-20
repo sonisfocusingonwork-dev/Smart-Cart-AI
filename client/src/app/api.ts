@@ -14,7 +14,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify(product),
     });
-    if (!res.ok) throw new Error('Failed to create product');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to create product');
+    }
     return res.json();
   },
   async updateProduct(id: string, product: any) {
@@ -24,7 +27,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify(product),
     });
-    if (!res.ok) throw new Error('Failed to update product');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to update product');
+    }
     return res.json();
   },
   async deleteProduct(id: string) {
@@ -145,17 +151,27 @@ export const api = {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify(order),
     });
-    if (!res.ok) throw new Error('Failed to create order');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to create order');
+    }
     return res.json();
   },
 
   // Logs
-  async getLogs() {
-    const res = await fetch(`${API_BASE_URL}/logs`);
-    if (!res.ok) throw new Error('Failed to fetch logs');
+  async submitGatewayLog(cartId: string, staffName: string, status: string, reason?: string, token?: string) {
+    const res = await fetch(`${API_BASE_URL}/gateway/log`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ cartId, staffName, status, reason }),
+    });
+    if (!res.ok) throw new Error('Failed to submit gateway log');
     return res.json();
   },
-  async createLog(log: any) {
+  async getLogs() {
     const res = await fetch(`${API_BASE_URL}/logs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -177,7 +193,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(session),
     });
-    if (!res.ok) throw new Error('Failed to create group session');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to create group session');
+    }
     return res.json();
   },
   async updateGroupSession(code: string, sessionData: any) {
@@ -239,7 +258,21 @@ export const api = {
     });
     if (!res.ok) {
       const errorMsg = await res.json().catch(() => ({}));
-      throw new Error(errorMsg.message || 'Tài khoản hoặc mật khẩu không chính xác');
+      throw new Error(errorMsg.message || 'Failed to login');
+    }
+    return res.json();
+  },
+
+  // Gateway
+  async getGatewayCartPayload(cartId: string, token: string) {
+    const res = await fetch(`${API_BASE_URL}/gateway/cart/${encodeURIComponent(cartId)}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      const errorMsg = await res.json().catch(() => ({}));
+      throw new Error(errorMsg.message || 'Failed to fetch cart payload');
     }
     return res.json();
   },

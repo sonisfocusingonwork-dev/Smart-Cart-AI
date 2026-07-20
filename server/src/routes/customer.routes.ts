@@ -17,7 +17,7 @@ router.post('/login', loginCustomer);
 router.post('/register', registerCustomer);
 router.post('/login-qr', loginWithQR);
 router.post('/verify-email', verifyCustomerEmail);
-router.put('/:customerId/points', verifyToken, updateCustomerPoints);
-router.put('/phone/:phoneNumber/points', verifyToken, updateCustomerPointsByPhone);
+router.put('/:customerId/points', updateCustomerPoints);
+router.put('/phone/:phoneNumber/points', updateCustomerPointsByPhone);
 
 export default router;

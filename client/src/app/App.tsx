@@ -21,6 +21,7 @@ import type {
   Screen,
   SharedGroupSnapshot,
   ShoppingListItem,
+  StoreProductLocation,
 } from "./shared";
 import { AccountScreen } from "./screens/AccountScreen";
 import { CartScreen } from "./screens/CartScreen";
@@ -36,6 +37,9 @@ import { AdminLoginScreen } from "./screens/AdminLoginScreen";
 import { AdminDashboardScreen } from "./screens/AdminDashboardScreen";
 import { AdminProtectedRoute } from "./components/AdminProtectedRoute";
 import { BranchProvider } from "./contexts/BranchContext";
+import { GatewayPortalScreen } from "./screens/GatewayPortalScreen";
+import { DigitalInvoiceScreen } from "./screens/DigitalInvoiceScreen";
+import { MobileAuthPortalScreen } from "./screens/MobileAuthPortalScreen";
 
 const MEMBER_TIER = "Gold" as const;
 const GROUP_STORAGE_PREFIX = "smartcart-group-";
@@ -43,8 +47,8 @@ const groupStorageKey = (code: string) => `${GROUP_STORAGE_PREFIX}${code}`;
 const normalizeCode = (code: string) =>
   code.trim().toUpperCase().replace(/\s+/g, "");
 const TONE_BY_CART: Record<string, string> = {
-  "Cart_01 (Xe chính)": "bg-[#0F172A]",
-  "Cart_02 (Xe 2)": "bg-[#F97316]",
+  "Cart_01 (Xe chính)": "bg-[#F5F5E6]",
+  "Cart_02 (Xe 2)": "bg-[#15803D]",
   "Cart_03 (Xe 3)": "bg-[#334155]",
 };
 
@@ -57,6 +61,7 @@ export default function App() {
   const [showListPopup, setShowListPopup] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [duplicateAlert, setDuplicateAlert] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [memberPoints, setMemberPoints] = useState(() => {
     if (typeof window === "undefined") return 1250;
     const saved = Number(
@@ -87,21 +92,82 @@ export default function App() {
   const [currentCart, setCurrentCart] = useState<MemberCart>({
     member: "Khách hàng",
     cartId: "Mua sắm cá nhân",
-    tone: "bg-[#0F172A]",
+    tone: "bg-[#F5F5E6]",
   });
   const [groupMembers, setGroupMembers] = useState<MemberCart[]>([]);
 
-  const [manualList, setManualList] = useState<ShoppingListItem[]>([
-    { name: "Mì Hảo Hảo", checked: false },
-    { name: "Sữa Tươi Vinamilk", checked: true },
-    { name: "Thịt Bò Úc 500g", checked: false },
-  ]);
+  const [currentUserId, setCurrentUserId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return window.localStorage.getItem("smartcart-current-user-id") || "guest";
+    }
+    return "guest";
+  });
+
+  const [manualList, setManualList] = useState<ShoppingListItem[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [currentReceipt, setCurrentReceipt] = useState<CompletedReceipt | null>(null);
+
+  // Function to load cart from localStorage
+  const loadCartData = (uid: string) => {
+    if (typeof window === "undefined") return;
+    const tsKey = `smartcart-session-ts-${uid}`;
+    const itemsKey = `smartcart-items-${uid}`;
+    const manualKey = `smartcart-manual-${uid}`;
+    const lastActive = window.localStorage.getItem(tsKey);
+
+    // Expire if > 24 hours
+    if (lastActive && Date.now() - Number(lastActive) > 24 * 60 * 60 * 1000) {
+      window.localStorage.removeItem(itemsKey);
+      window.localStorage.removeItem(manualKey);
+    }
+
+    const storedItems = window.localStorage.getItem(itemsKey);
+    const storedManual = window.localStorage.getItem(manualKey);
+
+    setItems(storedItems ? JSON.parse(storedItems) : []);
+    setManualList(
+      storedManual
+        ? JSON.parse(storedManual)
+        : [
+            { name: "Mì Hảo Hảo", checked: false },
+            { name: "Sữa Tươi Vinamilk", checked: true },
+            { name: "Thịt Bò Úc 500g", checked: false },
+          ]
+    );
+    window.localStorage.setItem(tsKey, String(Date.now()));
+  };
+
+  // Initial load when currentUserId changes
+  useEffect(() => {
+    loadCartData(currentUserId);
+  }, [currentUserId]);
+
+  // Sync back to localStorage on change
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // Only save if it's the active user
+    const itemsKey = `smartcart-items-${currentUserId}`;
+    const manualKey = `smartcart-manual-${currentUserId}`;
+    const tsKey = `smartcart-session-ts-${currentUserId}`;
+
+    window.localStorage.setItem(itemsKey, JSON.stringify(items));
+    window.localStorage.setItem(manualKey, JSON.stringify(manualList));
+    window.localStorage.setItem(tsKey, String(Date.now()));
+  }, [items, manualList, currentUserId]);
+  const [pendingNavTarget, setPendingNavTarget] = useState<StoreProductLocation | null>(null);
 
   const sourceIdRef = useRef(
     `smart-cart-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   const channelRef = useRef<BroadcastChannel | null>(null);
+  const [isMobileAuth, setIsMobileAuth] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.pathname === "/auth/pair") {
+      setIsMobileAuth(true);
+    }
+  }, []);
+
   const applyingRemoteRef = useRef(false);
   const lastSnapshotAtRef = useRef(0);
   useEffect(() => {
@@ -186,7 +252,10 @@ export default function App() {
       const hash = window.location.hash;
       if (path === "/admin" || path.startsWith("/admin/") || hash === "#/admin") {
         const storedRole = window.localStorage.getItem("smartcart-user-role");
-        if (storedRole === "admin") {
+        if (storedRole && storedRole.toLowerCase() === "gatewaychecker") {
+          setScreenState("gateway");
+          if (typeof window !== "undefined") window.history.replaceState({}, "", "/gateway");
+        } else if (storedRole && ["admin", "RootAdmin", "StoreManager", "Tech", "Security"].includes(storedRole)) {
           const storedAdminName = window.localStorage.getItem("smartcart-user-name") || "Root Technician";
           setAdminName(storedAdminName);
           setAuthenticated(true);
@@ -195,6 +264,8 @@ export default function App() {
           // Force screen state to "admin" to trigger AdminProtectedRoute block UI
           setScreenState("admin");
         }
+      } else if (path === "/gateway" || path.startsWith("/gateway/") || hash === "#/gateway") {
+        setScreenState("gateway");
       }
     }
   }, []);
@@ -208,12 +279,32 @@ export default function App() {
     setScreenState(newScreen);
   };
 
-  const back = () => {
+  const back = useCallback(() => {
     if (screen === "login") setScreenState("splash");
     else if (screen === "cart" || screen === "category")
       setScreenState(prevScreen);
     else setScreenState("home");
-  };
+  }, [screen, prevScreen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    // Push a dummy state to enable the back button
+    window.history.pushState(null, "", window.location.href);
+
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      // Only go back if not in critical flows
+      if (screen !== "splash" && screen !== "home") {
+        back();
+        // Repush state so they can't actually exit the app
+        window.history.pushState(null, "", window.location.href);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [back, screen]);
 
   const goToCategory = (categoryName: string) => {
     setActiveCategory(categoryName);
@@ -254,51 +345,44 @@ export default function App() {
     }
   }, []);
 
-  // API Syncing for Group Sessions
+  // Local Syncing via BroadcastChannel
   useEffect(() => {
     if (!groupCode) return;
-    let active = true;
+    
+    // Initialize BroadcastChannel for local real-time sync
+    if (!channelRef.current) {
+      channelRef.current = new BroadcastChannel(`smartcart-group-${groupCode}`);
+    }
 
-    const syncSession = async () => {
-      try {
-        const session = await api.getGroupSession(groupCode);
-        if (!active) return;
-        
-        if (session.updatedAtTimestamp > lastSnapshotAtRef.current && session.sourceId !== sourceIdRef.current) {
-          applyingRemoteRef.current = true;
-          lastSnapshotAtRef.current = session.updatedAtTimestamp;
-          setItems(session.items);
-          setManualList(session.manualList);
-          setGroupMembers(session.members);
-          setSyncStatus(`Vừa nhận cập nhật từ xe khác lúc ${new Date(session.updatedAtTimestamp).toLocaleTimeString("vi-VN")}`);
-        }
-      } catch (err) {
-        if (groupRole === 'member') {
-          if (active) {
-            setGroupCode("");
-            setGroupRole(null);
-            setGroupMembers([]);
-            setCurrentCart((current) => ({
-              ...current,
-              cartId: "Tài khoản cá nhân",
-              tone: "bg-[#0F172A]",
-            }));
-            setSyncStatus("Xe chính đã kết thúc phiên nhóm");
-            setDuplicateAlert("Phiên mua sắm nhóm đã được xe chính kết thúc.");
-            setScreenState("home");
-          }
-        }
+    const handleMessage = (event: MessageEvent<SharedGroupSnapshot>) => {
+      const snapshot = event.data;
+      if (
+        snapshot &&
+        snapshot.updatedAt > lastSnapshotAtRef.current &&
+        snapshot.sourceId !== sourceIdRef.current
+      ) {
+        applyingRemoteRef.current = true;
+        lastSnapshotAtRef.current = snapshot.updatedAt;
+        setItems(snapshot.items);
+        setManualList(snapshot.manualList);
+        setGroupMembers(snapshot.members);
+        setSyncStatus(
+          `Đã đồng bộ cục bộ lúc ${new Date(snapshot.updatedAt).toLocaleTimeString("vi-VN")}`
+        );
       }
     };
 
-    const interval = setInterval(syncSession, 3000);
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
-  }, [groupCode, groupRole]);
+    channelRef.current.onmessage = handleMessage;
 
-  // Push local updates to backend when items/manualList changes
+    return () => {
+      if (channelRef.current) {
+        channelRef.current.close();
+        channelRef.current = null;
+      }
+    };
+  }, [groupCode]);
+
+  // Push local updates to BroadcastChannel (and optionally backup to BE)
   useEffect(() => {
     if (!groupCode) return;
     if (applyingRemoteRef.current) {
@@ -311,22 +395,26 @@ export default function App() {
         const nextTimestamp = Date.now();
         lastSnapshotAtRef.current = nextTimestamp;
         
-        await api.updateGroupSession(groupCode, {
+        const snapshot = buildSnapshot(groupCode, groupMembers, items, manualList);
+        writeSnapshot(snapshot);
+        
+        // Also silently backup to backend so Admin can see it
+        api.updateGroupSession(groupCode, {
           members: groupMembers,
           items,
           manualList,
           sourceId: sourceIdRef.current
-        });
+        }).catch(() => {});
         
         setSyncStatus(`Đã đồng bộ lúc ${new Date(nextTimestamp).toLocaleTimeString("vi-VN")}`);
       } catch (err) {
-        console.error("Error pushing session update to BE:", err);
+        console.error("Error pushing session update:", err);
       }
     };
 
-    const timeout = setTimeout(pushUpdate, 500);
+    const timeout = setTimeout(pushUpdate, 50); // Fast local debounce
     return () => clearTimeout(timeout);
-  }, [groupCode, groupMembers, items, manualList]);
+  }, [groupCode, groupMembers, items, manualList, buildSnapshot, writeSnapshot]);
 
   const createShoppingGroup = async (name: string) => {
     const code = `SC-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -338,6 +426,7 @@ export default function App() {
     const hostLabel = `${host.member} · ${host.cartId}`;
     const sharedItems = items.map((item) => ({
       ...item,
+      tone: item.tone || host.tone || "bg-[#F5F5E6]",
       addedBy: item.addedBy ?? hostLabel,
     }));
     const sharedList = manualList.map((item) => ({
@@ -355,11 +444,7 @@ export default function App() {
         sourceId: sourceIdRef.current
       });
 
-      const activeCarts = await api.getCarts();
-      const cartObj = activeCarts.find((c: any) => c.name.includes("01"));
-      if (cartObj) {
-        await api.updateCart(cartObj.id, { currentSession: code, status: "active" });
-      }
+      // NOTE: Removed api.getCarts() and api.updateCart() because customers don't have admin tokens to update carts.
 
       setAuthenticated(true);
       setCurrentCart(host);
@@ -443,7 +528,7 @@ export default function App() {
     setCurrentCart((current) => ({
       member: current.member || "Khách hàng",
       cartId: "Mua sắm cá nhân",
-      tone: "bg-[#0F172A]",
+      tone: "bg-[#F5F5E6]",
     }));
     setSyncStatus("Chưa tham gia phiên nhóm");
   };
@@ -476,6 +561,10 @@ export default function App() {
     ]);
   };
 
+  const deleteManualItem = (idx: number) => {
+    setManualList((list) => list.filter((_, itemIndex) => itemIndex !== idx));
+  };
+
   const add = (product: Omit<Item, "id" | "qty"> & { stockLevel?: number }) => {
     if (typeof product.stockLevel === "number" && product.stockLevel <= 0) {
       setDuplicateAlert(`Sản phẩm "${product.name}" hiện đã hết hàng trong kho!`);
@@ -494,6 +583,7 @@ export default function App() {
         ...product,
         id: `${sourceIdRef.current}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         qty: 1,
+        tone: currentCart.tone || "bg-[#F5F5E6]",
         addedBy: groupCode ? memberLabel : undefined,
       },
     ]);
@@ -573,10 +663,14 @@ export default function App() {
         }
       }
       
+      // Wipe out the cart immediately upon payment
       setItems([]);
-    } catch (err) {
-      console.error("Failed to save order or update stats on BE:", err);
-      alert("Lỗi kết nối: Không thể lưu đơn hàng. Vui lòng thử lại!");
+      setManualList([]);
+      setCurrentReceipt(receipt);
+      setScreenState("invoice");
+    } catch (err: any) {
+      console.error("CHECKOUT_SAVE_ERROR: ", err);
+      setCheckoutError(err.message || "Lỗi kết nối: Không thể lưu đơn hàng. Vui lòng thử lại!");
     }
   };
 
@@ -584,12 +678,13 @@ export default function App() {
   const completePersonalLogin = (user: any) => {
     leaveGroup();
     setAuthenticated(true);
+    setCurrentUserId(user._id || "guest");
     const displayPhone = user.phoneNumber || user.phone;
     const role = user.role || "customer";
     setCurrentCart({
       member: user.fullName || user.name || "Khách hàng",
       cartId: displayPhone ? `Tài khoản ${displayPhone}` : `Mã QR ${user.qrCode}`,
-      tone: "bg-[#0F172A]",
+      tone: "bg-[#F5F5E6]",
     });
     setMemberPoints(user.points || 1250);
     if (typeof window !== "undefined") {
@@ -607,9 +702,12 @@ export default function App() {
       }
     }
 
-    if (role === "admin") {
+    if (role === "admin" || role === "RootAdmin" || role === "StoreManager") {
       setAdminName(user.fullName || user.name || "Administrator");
       setScreenState("admin");
+    } else if (role && role.toLowerCase() === "gatewaychecker") {
+      setAdminName(user.fullName || user.name || "Nhân viên cổng");
+      setScreenState("gateway");
     } else {
       setScreenState("home");
     }
@@ -640,10 +738,11 @@ export default function App() {
             continueAsGuest={() => {
               leaveGroup();
               setAuthenticated(false);
+              setCurrentUserId("guest");
               setCurrentCart({
                 member: "Khách hàng",
                 cartId: "Mua sắm cá nhân",
-                tone: "bg-[#0F172A]",
+                tone: "bg-[#F5F5E6]",
               });
               setScreen("home");
             }}
@@ -666,7 +765,13 @@ export default function App() {
               }
               setAuthenticated(true);
               setAdminName(name);
-              setScreen("admin");
+              if (role && role.toLowerCase() === "gatewaychecker") {
+                setScreen("gateway");
+                if (typeof window !== "undefined") window.history.pushState({}, "", "/gateway");
+              } else {
+                setScreen("admin");
+                if (typeof window !== "undefined") window.history.pushState({}, "", "/admin");
+              }
             }}
           />
         );
@@ -699,6 +804,8 @@ export default function App() {
             </BranchProvider>
           </AdminProtectedRoute>
         );
+      case "gateway":
+        return <GatewayPortalScreen back={() => setScreenState("login")} />;
       case "home":
         return (
           <HomeScreen
@@ -759,6 +866,8 @@ export default function App() {
             manualList={manualList}
             toggleCheckItem={toggleCheckItem}
             addNewManualItem={addNewManualItem}
+            deleteManualItem={deleteManualItem}
+            setPendingNavTarget={setPendingNavTarget}
           />
         );
       case "map":
@@ -771,6 +880,8 @@ export default function App() {
             toggleListPopup={() => setShowListPopup((value) => !value)}
             showListPopup={showListPopup}
             manualList={manualList}
+            pendingNavTarget={pendingNavTarget}
+            setPendingNavTarget={setPendingNavTarget}
             toggleCheckItem={toggleCheckItem}
             addNewManualItem={addNewManualItem}
           />
@@ -826,6 +937,14 @@ export default function App() {
             memberTier={memberTier}
           />
         );
+      case "invoice":
+        return currentReceipt ? (
+          <DigitalInvoiceScreen
+            receipt={currentReceipt}
+            go={setScreen}
+            cartId={currentCart.cartId}
+          />
+        ) : null;
       default:
         return null;
     }
@@ -838,18 +957,23 @@ export default function App() {
       window.localStorage.removeItem("smartcart-current-user-id");
     }
     setAuthenticated(false);
+    setCurrentUserId("guest");
     setScreenState("splash");
   };
 
   const showNav =
     screen === "home" || screen === "map" || screen === "account";
 
+  if (isMobileAuth) {
+    return <MobileAuthPortalScreen />;
+  }
+
   return (
-    <main className="h-[100dvh] w-full overflow-hidden bg-[#FFFFFF] text-[#0F172A]">
+    <main className="h-[100dvh] w-full overflow-hidden bg-[#FFFFFF] text-[#334155]">
       <div className="relative mx-auto flex h-full max-w-[1366px] flex-col overflow-hidden">
         {renderScreen()}
         {duplicateAlert && (
-          <div className="absolute left-1/2 top-4 z-[100] flex w-[min(720px,90%)] -translate-x-1/2 items-center gap-3 rounded-2xl border-2 border-amber-500 bg-amber-50 p-4 text-[#0F172A] shadow-[0_16px_36px_rgba(17,17,17,.25)]">
+          <div className="absolute left-1/2 top-4 z-[100] flex w-[min(720px,90%)] -translate-x-1/2 items-center gap-3 rounded-2xl border-2 border-amber-500 bg-amber-50 p-4 text-[#334155] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]">
             <AlertTriangle size={26} className="shrink-0 text-amber-600" />
             <div className="flex-1">
               <p className="text-[10px] font-black uppercase tracking-[.16em] text-amber-700">
@@ -859,9 +983,26 @@ export default function App() {
             </div>
             <button
               onClick={() => setDuplicateAlert(null)}
-              className="rounded-xl bg-amber-200 px-3 py-2 text-xs font-black hover:bg-amber-300"
+              className="rounded-2xl bg-amber-200 px-3 py-2 text-xs font-black hover:bg-amber-300"
             >
               Đã hiểu
+            </button>
+          </div>
+        )}
+        {checkoutError && (
+          <div className="absolute left-1/2 top-4 z-[100] flex w-[min(720px,90%)] -translate-x-1/2 items-center gap-3 rounded-2xl border-2 border-rose-500 bg-rose-50 p-4 text-[#334155] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]">
+            <AlertTriangle size={26} className="shrink-0 text-rose-600" />
+            <div className="flex-1">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-rose-700">
+                Thanh toán thất bại
+              </p>
+              <p className="mt-1 text-sm font-extrabold">{checkoutError}</p>
+            </div>
+            <button
+              onClick={() => setCheckoutError(null)}
+              className="rounded-2xl bg-rose-200 px-3 py-2 text-xs font-black hover:bg-rose-300"
+            >
+              Đóng
             </button>
           </div>
         )}
@@ -869,9 +1010,9 @@ export default function App() {
           !["splash", "login", "group"].includes(screen) && (
             <button
               onClick={() => setScreen("group")}
-              className="absolute bottom-[92px] left-5 z-30 flex items-center gap-2 rounded-xl border border-emerald-400 bg-[#0F172A]/95 px-3 py-2 text-xs font-black text-white shadow-lg"
+              className="absolute bottom-[92px] left-5 z-30 flex items-center gap-2 rounded-2xl border border-[#15803D] bg-[#F5F5E6] px-3 py-2 text-xs font-black text-[#334155] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]"
             >
-              <Wifi size={15} className="text-emerald-400" />
+              <Wifi size={15} className="text-[#15803D]" />
               <span>
                 {groupCode} · {syncStatus}
               </span>

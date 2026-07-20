@@ -127,14 +127,23 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
     // 2. Safe Deduction
     if (saved.items && Array.isArray(saved.items)) {
       for (const item of saved.items) {
+        // Use updateOne to avoid full document validation (e.g. missing barcode on older mock products)
         const product = await Product.findOne({ name: item.name });
         if (product) {
-          product.stockLevel -= item.qty;
-          product.quantity += item.qty;
-          product.revenue += (item.price * item.qty); 
-          
-          if (product.stockLevel < 10) product.lowStockAlert = true;
-          await product.save();
+          const newStockLevel = product.stockLevel - item.qty;
+          await Product.updateOne(
+            { _id: product._id },
+            {
+              $inc: {
+                stockLevel: -item.qty,
+                quantity: item.qty,
+                revenue: item.price * item.qty
+              },
+              $set: {
+                lowStockAlert: newStockLevel < 10
+              }
+            }
+          );
         }
       }
     }

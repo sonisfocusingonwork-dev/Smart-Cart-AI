@@ -30,7 +30,7 @@ const ProductSchema: Schema = new Schema(
     stockLevel: { type: Number, default: 0 },
     lowStockAlert: { type: Boolean, default: false },
     image: { type: String, default: "" },
-    barcode: { type: String, default: "" },
+    barcode: { type: String, required: true },
     coordinates: {
       x: { type: Number, default: 0 },
       y: { type: Number, default: 0 }

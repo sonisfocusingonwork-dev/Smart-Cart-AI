@@ -38,7 +38,8 @@ export type Screen =
   | "history"
   | "offers"
   | "admin"
-  | "admin-login";
+  | "admin-login"
+  | "invoice";
 export type MemberCart = { member: string; cartId: string; tone: string };
 export type Item = {
   id: string;
@@ -49,7 +50,30 @@ export type Item = {
   tone: string;
   category?: string;
   addedBy?: string;
+  barcode: string;
 };
+
+export interface Product {
+  id: string;
+  name: string;
+  category:
+    | "Hàng tươi sống"
+    | "Thực phẩm khô & đồ uống"
+    | "Đông lạnh"
+    | "Gia vị"
+    | "Đồ gia dụng"
+    | "Mẹ & Bé"
+    | "Hóa mỹ phẩm"
+    | string;
+  subCategory: string;
+  price: number;
+  quantity: number;
+  revenue: number;
+  stockLevel: number;
+  lowStockAlert?: boolean;
+  image?: string;
+  barcode: string;
+}
 export type ShoppingListItem = {
   name: string;
   checked: boolean;
@@ -124,6 +148,52 @@ export type Voucher = {
   weekendOnly?: boolean;
   stackable?: boolean;
   usageLimit: string;
+}
+
+export interface GateItemDetails {
+  name: string;
+  qty: number;
+  price: number;
+  aiVerified: boolean;
+}
+
+export interface CartHistoryPayload {
+  cartId: string;
+  invoiceCode: string;
+  customerPhone: string;
+  paymentMethod: PaymentMethod | string;
+  items: GateItemDetails[];
+  status: 'paid' | 'unpaid' | 'hold' | 'passed';
+  timestamp: string;
+  handledBy?: string;
+  total: number;
+  discount?: number;
+  tax?: number;
+  appliedVoucherCode?: string;
+}
+
+export interface GatewayDashboardData {
+  stats: {
+    totalChecks: number;
+    passCount: number;
+    holdCount: number;
+    successRate: number;
+    avgSpeed: string;
+  };
+  history: CartHistoryPayload[];
+}
+
+export interface GateSnapshotData {
+  imageUrl: string;
+  timestamp: string;
+  cartId: string;
+  aiAnomalies: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    label: string;
+  }[];
 };
 
 export type VoucherStatus = {
@@ -474,13 +544,13 @@ export const PRODUCTS = [
     name: "Cá Hồi Tươi 300g",
     category: "Thực phẩm tươi",
     price: 180000,
-    tone: "bg-[#F97316]",
+    tone: "bg-[#15803D]",
   },
   {
     name: "Mì Gói Hảo Hảo",
     category: "Đồ khô",
     price: 4000,
-    tone: "bg-[#F97316]",
+    tone: "bg-[#15803D]",
   },
   {
     name: "Gạo ST25 5kg",
@@ -493,13 +563,13 @@ export const PRODUCTS = [
     name: "Hạt Điều Rang Muối",
     category: "Đồ khô",
     price: 75000,
-    tone: "bg-[#F97316]",
+    tone: "bg-[#15803D]",
   },
   {
     name: "Dầu ăn Simply 1L",
     category: "Gia vị",
     price: 62000,
-    tone: "bg-[#F97316]",
+    tone: "bg-[#15803D]",
   },
   {
     name: "Nước mắm Nam Ngư",
@@ -511,13 +581,13 @@ export const PRODUCTS = [
     name: "Hạt Nêm Knorr",
     category: "Gia vị",
     price: 32000,
-    tone: "bg-[#F97316]",
+    tone: "bg-[#15803D]",
   },
   {
     name: "Coca-Cola 330ml",
     category: "Đồ uống",
     price: 10000,
-    tone: "bg-[#F97316]",
+    tone: "bg-[#15803D]",
   },
   {
     name: "Bia Heineken 330ml",
@@ -529,13 +599,13 @@ export const PRODUCTS = [
     name: "Nước suối Aquafina 500ml",
     category: "Đồ uống",
     price: 6000,
-    tone: "bg-[#F97316]",
+    tone: "bg-[#15803D]",
   },
   {
     name: "Nước rửa chén Sunlight",
     category: "Đồ gia dụng",
     price: 25000,
-    tone: "bg-[#F97316]",
+    tone: "bg-[#15803D]",
   },
   {
     name: "Khăn giấy cuộn lớn",
@@ -548,7 +618,7 @@ export const PRODUCTS = [
     category: "Mẹ & Bé",
     price: 36000,
     oldPrice: 45000,
-    tone: "bg-[#F97316]",
+    tone: "bg-[#15803D]",
   },
   {
     name: "Tã dán Huggies L",
@@ -566,7 +636,7 @@ export const PRODUCTS = [
     name: "Kem đánh răng Closeup",
     category: "Hóa mỹ phẩm",
     price: 38000,
-    tone: "bg-[#F97316]",
+    tone: "bg-[#15803D]",
   },
 ];
 
@@ -972,9 +1042,9 @@ export function GoldIcon({
 }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#F97316] bg-[#0F172A] p-px shadow-[0_0_11px_rgba(249,115,22,.38)] ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#15803D] bg-[#0F172A] p-px shadow-[0_0_11px_rgba(249,115,22,.38)] ${className}`}
     >
-      <span className="flex h-full w-full items-center justify-center rounded-[inherit] bg-[#0F172A] text-[#F97316]">
+      <span className="flex h-full w-full items-center justify-center rounded-[inherit] bg-[#0F172A] text-[#15803D]">
         {children}
       </span>
     </span>
@@ -990,7 +1060,7 @@ export function SoftIcon({
 }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center rounded-full bg-[#F1F5F9] text-[#0F172A] transition-colors group-hover:bg-[#F97316] group-hover:text-white ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full bg-[#F1F5F9] text-[#15803D] transition-colors group-hover:bg-[#15803D] group-hover:text-white ${className}`}
     >
       {children}
     </span>
@@ -1007,7 +1077,7 @@ export function Back({
   return (
     <button
       onClick={onClick}
-      className={`flex h-12 items-center gap-2 rounded-xl px-4 text-base font-extrabold transition active:scale-95 ${dark ? "text-white hover:bg-white/10" : "border border-[#F97316]/70 bg-white/75 text-[#0F172A] shadow-sm backdrop-blur-xl hover:bg-white"}`}
+      className={`relative z-10 flex h-12 items-center gap-2 rounded-xl px-4 text-base font-extrabold transition active:scale-95 border border-[#15803D]/70 bg-white text-[#334155] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.06)] hover:bg-[#F5F5E6]`}
     >
       <ChevronLeft size={22} /> Quay lại
     </button>
@@ -1128,11 +1198,11 @@ export function TopStatusBar({
     >
       <div className="flex items-center gap-4">
         <span className="flex items-center gap-1.5">
-          <Battery size={14} className="text-[#F97316]" />
+          <Battery size={14} className="text-[#15803D]" />
           85%
         </span>
         <span className="flex items-center gap-1.5">
-          <Wifi size={14} className="text-[#F97316]" />
+          <Wifi size={14} className="text-[#15803D]" />
           Đã kết nối (0.3s)
         </span>
       </div>
@@ -1143,20 +1213,20 @@ export function TopStatusBar({
           setSupportView("menu");
           setSupportNotice("");
         }}
-        className="flex h-7 items-center gap-1.5 rounded-lg bg-[#F97316] px-3 text-xs font-black text-[#0F172A] transition-colors hover:bg-white"
+        className="flex h-7 items-center gap-1.5 rounded-lg bg-[#15803D] px-3 text-xs font-black text-white transition-colors hover:bg-white"
       >
         <Headphones size={14} />
         Trung tâm hỗ trợ
       </button>
 
       {supportOpen && (
-        <div className="absolute right-5 top-9 z-[220] w-[430px] overflow-hidden rounded-3xl border border-[#F97316] bg-white text-[#0F172A] shadow-[0_20px_55px_rgba(15,23,42,.32)]">
+        <div className="absolute right-5 top-9 z-[220] w-[430px] overflow-hidden rounded-3xl border border-[#15803D] bg-white text-[#334155] shadow-[0_20px_55px_rgba(15,23,42,.32)]">
           <div className="flex items-center gap-3 bg-[#0F172A] px-5 py-4 text-white">
             <GoldIcon className="h-10 w-10 rounded-xl">
               <Headphones size={19} />
             </GoldIcon>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#F97316]">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#15803D]">
                 Smart Cart Care
               </p>
               <h2 className="truncate text-base font-black">
@@ -1170,7 +1240,7 @@ export function TopStatusBar({
                   setSupportView("menu");
                   setSupportNotice("");
                 }}
-                className="rounded-lg px-2 py-1 text-xs font-black text-[#F97316] hover:bg-white/10"
+                className="rounded-lg px-2 py-1 text-xs font-black text-[#15803D] hover:bg-white"
               >
                 Quay lại
               </button>
@@ -1178,7 +1248,7 @@ export function TopStatusBar({
             <button
               type="button"
               onClick={closeSupport}
-              className="rounded-lg p-1.5 hover:bg-white/10"
+              className="rounded-lg p-1.5 hover:bg-white shadow-sm border border-[#E2E8F0]/10"
               aria-label="Đóng trung tâm hỗ trợ"
             >
               <X size={18} />
@@ -1197,7 +1267,7 @@ export function TopStatusBar({
               <button
                 type="button"
                 onClick={() => setSupportView("ai")}
-                className="group min-h-32 rounded-2xl border border-[#CBD5E1] bg-white p-4 text-left transition hover:border-[#F97316] hover:bg-[#FFF7ED]"
+                className="group min-h-32 rounded-2xl border border-[#E2E8F0] bg-white p-4 text-left transition hover:border-[#15803D] hover:bg-[#FFF7ED]"
               >
                 <GoldIcon className="h-11 w-11 rounded-xl">
                   <Bot size={20} />
@@ -1210,7 +1280,7 @@ export function TopStatusBar({
               <button
                 type="button"
                 onClick={() => setSupportView("staff")}
-                className="group min-h-32 rounded-2xl border border-[#CBD5E1] bg-white p-4 text-left transition hover:border-[#F97316] hover:bg-[#FFF7ED]"
+                className="group min-h-32 rounded-2xl border border-[#E2E8F0] bg-white p-4 text-left transition hover:border-[#15803D] hover:bg-[#FFF7ED]"
               >
                 <GoldIcon className="h-11 w-11 rounded-xl">
                   <Phone size={20} />
@@ -1223,7 +1293,7 @@ export function TopStatusBar({
               <button
                 type="button"
                 onClick={() => setSupportView("return")}
-                className="group min-h-32 rounded-2xl border border-[#CBD5E1] bg-white p-4 text-left transition hover:border-[#F97316] hover:bg-[#FFF7ED]"
+                className="group min-h-32 rounded-2xl border border-[#E2E8F0] bg-white p-4 text-left transition hover:border-[#15803D] hover:bg-[#FFF7ED]"
               >
                 <GoldIcon className="h-11 w-11 rounded-xl">
                   <RotateCcw size={20} />
@@ -1236,7 +1306,7 @@ export function TopStatusBar({
               <button
                 type="button"
                 onClick={() => setSupportView("faq")}
-                className="group min-h-32 rounded-2xl border border-[#CBD5E1] bg-white p-4 text-left transition hover:border-[#F97316] hover:bg-[#FFF7ED]"
+                className="group min-h-32 rounded-2xl border border-[#E2E8F0] bg-white p-4 text-left transition hover:border-[#15803D] hover:bg-[#FFF7ED]"
               >
                 <GoldIcon className="h-11 w-11 rounded-xl">
                   <FileText size={20} />
@@ -1252,8 +1322,8 @@ export function TopStatusBar({
           {supportView === "ai" && (
             <div className="p-4">
               <div className="rounded-2xl bg-[#F1F5F9] p-4 text-sm font-semibold leading-relaxed text-[#334155]">
-                <div className="mb-2 flex items-center gap-2 font-black text-[#0F172A]">
-                  <Bot size={18} className="text-[#EA580C]" />
+                <div className="mb-2 flex items-center gap-2 font-black text-[#334155]">
+                  <Bot size={18} className="text-[#15803D]" />
                   AI hỗ trợ nhanh
                 </div>
                 {aiReply}
@@ -1268,7 +1338,7 @@ export function TopStatusBar({
                     type="button"
                     key={question}
                     onClick={() => askQuickAI(question)}
-                    className="rounded-full border border-[#F97316]/70 bg-[#FFF7ED] px-3 py-1.5 text-[11px] font-black"
+                    className="rounded-full border border-[#15803D]/70 bg-[#FFF7ED] px-3 py-1.5 text-[11px] font-black"
                   >
                     {question}
                   </button>
@@ -1285,9 +1355,9 @@ export function TopStatusBar({
                   value={aiQuestion}
                   onChange={(event) => setAiQuestion(event.target.value)}
                   placeholder="Nhập câu hỏi cần hỗ trợ..."
-                  className="h-11 min-w-0 flex-1 rounded-xl border border-[#CBD5E1] bg-white px-3 text-sm font-semibold outline-none focus:border-[#F97316]"
+                  className="h-11 min-w-0 flex-1 rounded-xl border border-[#E2E8F0] bg-white px-3 text-sm font-semibold outline-none focus:border-[#15803D]"
                 />
-                <button className="flex h-11 items-center gap-1 rounded-xl bg-[#F97316] px-4 text-xs font-black">
+                <button className="flex h-11 items-center gap-1 rounded-xl bg-[#15803D] px-4 text-xs font-black">
                   <Send size={15} />
                   Gửi
                 </button>
@@ -1297,8 +1367,8 @@ export function TopStatusBar({
 
           {supportView === "staff" && (
             <div className="p-5">
-              <div className="rounded-2xl border border-[#CBD5E1] bg-[#F8FAFC] p-4">
-                <p className="text-xs font-black uppercase tracking-[.14em] text-[#EA580C]">
+              <div className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+                <p className="text-xs font-black uppercase tracking-[.14em] text-[#15803D]">
                   Hỗ trợ tại chỗ
                 </p>
                 <h3 className="mt-1 text-lg font-black">
@@ -1310,13 +1380,13 @@ export function TopStatusBar({
                 </p>
                 <div className="mt-4 flex items-center justify-between rounded-xl bg-white px-3 py-3 text-xs font-bold">
                   <span>Thời gian dự kiến</span>
-                  <b className="text-emerald-600">2–4 phút</b>
+                  <b className="text-[#15803D]">2–4 phút</b>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={requestStaff}
-                className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#F97316] font-black"
+                className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#15803D] font-black"
               >
                 <Phone size={18} />
                 Gọi nhân viên hỗ trợ
@@ -1337,7 +1407,7 @@ export function TopStatusBar({
                 value={returnOrder}
                 onChange={(event) => setReturnOrder(event.target.value)}
                 placeholder="Ví dụ: SC-260706-1842"
-                className="mt-1 h-11 w-full rounded-xl border border-[#CBD5E1] px-3 text-sm font-semibold outline-none focus:border-[#F97316]"
+                className="mt-1 h-11 w-full rounded-xl border border-[#E2E8F0] px-3 text-sm font-semibold outline-none focus:border-[#15803D]"
               />
               <label className="mt-4 block text-xs font-black">
                 Nguyên nhân
@@ -1345,7 +1415,7 @@ export function TopStatusBar({
               <select
                 value={returnCause}
                 onChange={(event) => setReturnCause(event.target.value)}
-                className="mt-1 h-11 w-full rounded-xl border border-[#CBD5E1] bg-white px-3 text-sm font-semibold outline-none"
+                className="mt-1 h-11 w-full rounded-xl border border-[#E2E8F0] bg-white px-3 text-sm font-semibold outline-none"
               >
                 <option>Khách hàng chọn nhầm sản phẩm</option>
                 <option>Khách hàng muốn đổi sản phẩm khác</option>
@@ -1359,7 +1429,7 @@ export function TopStatusBar({
                 value={returnDetail}
                 onChange={(event) => setReturnDetail(event.target.value)}
                 placeholder="Mô tả sản phẩm và tình trạng cần hỗ trợ..."
-                className="mt-1 min-h-24 w-full resize-none rounded-xl border border-[#CBD5E1] p-3 text-sm font-semibold outline-none focus:border-[#F97316]"
+                className="mt-1 min-h-24 w-full resize-none rounded-xl border border-[#E2E8F0] p-3 text-sm font-semibold outline-none focus:border-[#15803D]"
               />
               <div className="mt-3 flex gap-2 rounded-xl bg-amber-50 p-3 text-[11px] font-bold leading-relaxed text-amber-800">
                 <AlertTriangle size={16} className="shrink-0" />
@@ -1369,7 +1439,7 @@ export function TopStatusBar({
               <button
                 type="button"
                 onClick={submitReturnSupport}
-                className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#F97316] font-black"
+                className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#15803D] font-black"
               >
                 <RotateCcw size={18} />
                 Gửi yêu cầu hoàn trả
@@ -1382,7 +1452,7 @@ export function TopStatusBar({
               {faqItems.map(([question, answer], index) => (
                 <div
                   key={question}
-                  className="overflow-hidden rounded-xl border border-[#CBD5E1]"
+                  className="overflow-hidden rounded-xl border border-[#E2E8F0]"
                 >
                   <button
                     type="button"
@@ -1426,11 +1496,11 @@ export function MiniCartButton({
   return (
     <button
       onClick={onClick}
-      className={`z-20 flex h-12 items-center gap-2 rounded-xl border border-[#F97316]/75 bg-[#0F172A]/92 px-4 text-sm font-bold text-white shadow-[0_0_16px_rgba(249,115,22,.2)] backdrop-blur-xl hover:bg-[#0F172A] ${className}`}
+      className={`z-20 flex h-12 items-center gap-2 rounded-xl border border-[#15803D]/75 bg-[#0F172A]/92 px-4 text-sm font-bold text-white shadow-[0_0_16px_rgba(249,115,22,.2)]  hover:bg-[#0F172A] ${className}`}
     >
       <ShoppingCart size={20} />
       <span>
-        {count} món - <b className="text-[#F97316]">{formatMoney(total)}</b>
+        {count} món - <b className="text-[#15803D]">{formatMoney(total)}</b>
       </span>
     </button>
   );
@@ -1447,7 +1517,7 @@ export function QuickListButton({
     <button
       onClick={onClick}
       aria-label="Mở danh sách mua sắm nhóm"
-      className={`flex h-12 w-12 items-center justify-center rounded-xl border border-[#F97316]/75 bg-[#0F172A]/92 text-[#F97316] shadow-[0_0_16px_rgba(249,115,22,.2)] backdrop-blur-xl hover:bg-[#0F172A] hover:text-white transition-colors ${className}`}
+      className={`flex h-12 w-12 items-center justify-center rounded-xl border border-[#15803D]/75 bg-[#0F172A]/92 text-[#15803D] shadow-[0_0_16px_rgba(249,115,22,.2)]  hover:bg-[#0F172A] hover:text-white transition-colors ${className}`}
     >
       <FileText size={22} />
     </button>
@@ -1469,27 +1539,27 @@ export function BottomNav({
     ["account", UserRound, "Tài khoản"],
   ] as const;
   return (
-    <nav className="flex h-[82px] shrink-0 items-center gap-3 border-t border-[#CBD5E1] bg-white/95 px-6 shadow-[0_-8px_28px_rgba(17,17,17,.06)] backdrop-blur-xl">
+    <nav className="flex h-[82px] shrink-0 items-center gap-3 border-t border-[#E2E8F0] bg-white px-6 shadow-[0_-8px_28px_rgba(17,17,17,.06)] ">
       {tabs.map(([id, Icon, label]) => {
         const isActive = active === id;
         return (
           <button
             key={id}
             onClick={() => onChange(id)}
-            className={`relative flex h-[62px] flex-1 items-center justify-center gap-2.5 rounded-2xl px-3 transition-all duration-300 ${isActive ? "bg-[#FFF7ED] border border-[#F97316]/60 text-[#F97316] shadow-[0_4px_16px_rgba(249,115,22,.15)] scale-[1.02]" : "text-[#475569] hover:bg-[#F1F5F9] border border-transparent"}`}
+            className={`relative flex h-[62px] flex-1 items-center justify-center gap-2.5 rounded-2xl px-3 transition-all duration-300 ${isActive ? "bg-[#D1FAE5] border border-[#8CB867]/40 text-[#15803D] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.06)] scale-[1.02]" : "text-[#475569] hover:bg-[#F1F5F9] border border-transparent"}`}
           >
             <span
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${isActive ? "bg-[#F97316] text-white shadow-[0_0_12px_rgba(249,115,22,.4)]" : "bg-[#F1F5F9] text-[#0F172A]"}`}
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${isActive ? "bg-[#15803D] text-white shadow-[4px_4px_0px_0px_rgba(51,65,85,0.06)]" : "bg-[#F1F5F9] text-[#334155]"}`}
             >
               <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
             </span>
             <span
-              className={`text-xs font-black tracking-wide ${isActive ? "text-[#0F172A]" : "text-[#475569]"}`}
+              className={`text-xs font-black tracking-wide ${isActive ? "text-[#334155]" : "text-[#475569]"}`}
             >
               {label}
             </span>
             {id === "home" && cartCount > 0 && (
-              <span className="absolute right-3 top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#F97316] px-1 text-[9px] text-white font-black">
+              <span className="absolute right-3 top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#15803D] px-1 text-[9px] text-white font-black">
                 {cartCount}
               </span>
             )}
@@ -1504,9 +1574,9 @@ export function BottomNav({
 
 export function Modal({ children }: { children: React.ReactNode }) {
   return (
-    <div className="absolute inset-0 z-[110] flex items-center justify-center bg-black/60 p-8 backdrop-blur-sm">
-      <div className="w-full max-w-[560px] rounded-3xl border border-[#F97316] bg-white p-8 shadow-[0_0_32px_rgba(249,115,22,.35)]">
-        <div className="text-center text-[#0F172A] [&>h2]:text-2xl [&>h2]:font-black">
+    <div className="absolute inset-0 z-[110] flex items-center justify-center bg-[#334155]/50 p-8 ">
+      <div className="w-full max-w-[560px] rounded-3xl border border-[#15803D] bg-white p-8 shadow-[0_0_32px_rgba(249,115,22,.35)]">
+        <div className="text-center text-[#334155] [&>h2]:text-2xl [&>h2]:font-black">
           {children}
         </div>
       </div>

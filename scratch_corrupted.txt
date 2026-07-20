@@ -1,169 +1,0 @@
-0: �import React, { useState, useEffect } from "react";
-101: type: "L�!ch cân nặng" | "Camera AI phát hi�!n vật lạ";
-109: case "Hàng tươi s�ng":
-111: label: "�x�� Tươi s�ng",
-114: case "Thực phẩm khô & �� u�ng":
-116: label: "�x� Đ� khô & Nư�:c",
-121: label: "�️ Đông lạnh",
-172: const [formCategory, setFormCategory] = useState<Product["category"]>("Hàng tươi s�ng");
-191: title: "Y�`U CẦU H� TRỢ M�aI",
-192: message: `Xe ${ticket.cartId} �ang cần h� trợ tại khu vực ${ticket.locationZone}`
-203: console.error("L�i khi tải lại kho hàng:", err);
-212: console.error("L�i khi tải lại danh sách xe �ẩy:", err);
-291: // Nạp các mặt hàng trong session nhóm hi�!n tại của xe �ẩy
-306: // Mặc ��9nh fallback nếu không t�n tại session trên db
-308: { name: "Sữa Tươi Ti�!t Trùng Vinamilk 1L", qty: 1, price: 36000, addedAt: "Vừa xong" }
-331: const [selectedChartCategory, setSelectedChartCategory] = useState<string>("Hàng tươi s�ng");
-399: active: { name: "S� lượng xe �ẩy �ang hoạt ��"ng", value: 0, color: "#22C55E" }, // green-500
-400: inactive: { name: "S� lượng xe �ẩy �ang không hoạt ��"ng (Ngoại tuyến)", value: 0, color: "#EF4444" }, // red-500
-401: maintenance: { name: "S� lượng xe �ẩy �ang bảo trì", value: 0, color: "#EAB308" } // yellow-500
-428: setFormCategory("Hàng tươi s�ng");
-453: alert("Vui lòng �iền �úng thông tin sản phẩm!");
-469: await api.createLog({ msg: `Sản phẩm [${formId}] - ${formName} �ã �ược cập nhật b�xi Admin.`, type: "success", time: new Date().toLocaleTimeString("vi-VN") });
-482: await api.createLog({ msg: `Sản phẩm m�:i [${formId}] - ${formName} �ã �ược thêm vào h�! th�ng.`, type: "success", time: new Date().toLocaleTimeString("vi-VN") });
-488: alert("L�i khi lưu sản phẩm: " + (err as Error).message);
-493: if (window.confirm(`Bạn có chắc chắn mu�n xóa sản phẩm: ${name}?`)) {
-497: await api.createLog({ msg: `Sản phẩm [${id}] - ${name} �ã b�9 xóa khỏi h�! th�ng.`, type: "warning", time: new Date().toLocaleTimeString("vi-VN") });
-501: alert("L�i khi xóa sản phẩm: " + (err as Error).message);
-517: setCartFormName(`Xe �ẩy Smart Cart ${String(maxIdNum + 1).padStart(2, "0")}`);
-535: alert("Thông tin xe �ẩy không hợp l�!!");
-548: await api.createLog({ msg: `Thông tin [${cartFormId}] - ${cartFormName} �ã �ược cập nhật.`, type: "success", time: new Date().toLocaleTimeString("vi-VN") });
-559: await api.createLog({ msg: `Xe �ẩy m�:i [${cartFormId}] �ã �ược �Ēng ký trên h�! th�ng Gateway.`, type: "success", time: new Date().toLocaleTimeString("vi-VN") });
-565: alert("L�i khi lưu thông tin xe �ẩy: " + (err as Error).message);
-570: if (window.confirm(`Bạn có chắc chắn mu�n gỡ bỏ xe �ẩy: ${name} khỏi h�! th�ng?`)) {
-575: await api.createLog({ msg: `Xe �ẩy [${id}] �ã b�9 gỡ kết n�i khỏi h�! th�ng.`, type: "danger", time: new Date().toLocaleTimeString("vi-VN") });
-579: alert("L�i khi gỡ bỏ xe �ẩy: " + (err as Error).message);
-585: if (window.confirm(`Xác nhận thanh toán cưỡng bức & kết thúc phiên mua sắm ${sessionCode} trên Xe �ẩy ${cartId}?`)) {
-592: await api.createLog({ msg: `Đã ngắt kết n�i & Hoàn tất cưỡng bức phiên mua sắm ${sessionCode} của xe �ẩy [${cartId}].`, type: "info", time: new Date().toLocaleTimeString("vi-VN") });
-597: alert("L�i khi kết thúc phiên mua sắm: " + (err as Error).message);
-603: if (window.confirm(`Gửi l�!nh khóa cứng bánh xe từ xa t�:i thiết b�9 ${cartName}?`)) {
-615: await api.createLog({ msg: `Gửi l�!nh KH�A BÁNH XE �ẩy [${cartId}] thành công. Xe �ã tự ��"ng chuyỒn sang chế ��" Bảo Trì.`, type: "danger", time: new Date().toLocaleTimeString("vi-VN") });
-622: alert("L�i khi khóa bánh xe: " + (err as Error).message);
-639: alert("L�i khi cập nhật hàng loạt: " + (err as Error).message);
-644: alert(`Đang gửi tín hi�!u Restart Gateway t�:i ${cartName}... Tablet �ang kh�xi ��"ng lại.`);
-645: api.createLog({ msg: `Đã gửi yêu cầu kh�xi ��"ng lại màn hình máy tính bảng trên [${cartId}].`, type: "warning", time: new Date().toLocaleTimeString("vi-VN") })
-653: await api.createLog({ msg: `Cảnh báo an ninh [${alertId}] �ã �ược Kỹ thuật viên phê duy�!t Bỏ qua (Resolved).`, type: "success", time: new Date().toLocaleTimeString("vi-VN") });
-657: alert("L�i khi duy�!t cảnh báo: " + (err as Error).message);
-663: return val.toLocaleString("vi-VN") + "�";
-675: title={sidebarCollapsed ? "M�x r�"ng sidebar" : "Thu gọn sidebar"}
-827: title="Cài �ặt H�! th�ng"
-830: {!sidebarCollapsed && <span className="animate-fade-in whitespace-nowrap">Cài �ặt H�! th�ng</span>}
-841: title="Trung tâm H� trợ"
-844: {!sidebarCollapsed && <span className="animate-fade-in whitespace-nowrap">Trung tâm H� trợ</span>}
-869: {activeTab === "overview" && "Doanh Thu & T�n Kho Đ�ng B�""}
-870: {activeTab === "products" && "H�! Th�ng Quản Lý Sản Phẩm"}
-871: {activeTab === "carts" && "Giám Sát H�! Th�ng Xe Đẩy Thông Minh"}
-873: {activeTab === "logs" && "C�"ng Thông Tin Logs Gateway"}
-875: {activeTab === "settings" && "Cài Đặt H�! Th�ng"}
-877: {activeTab === "helpdesk" && "Trung Tâm H� Trợ (Helpdesk)"}
-886: title="Nhấn �Ồ xem chi tiết cảnh báo chưa xử lý"
-916: Phiên làm vi�!c: <b className="text-orange-400">Root-Mode</b>
-932: <span className="text-xs font-bold text-slate-400 block uppercase tracking-wider">T�"ng Doanh Thu Hàng Hóa</span>
-944: <span className="text-xs font-bold text-slate-400 block uppercase tracking-wider">T�"ng Sản Phẩm Trong Kho</span>
-956: <span className="text-xs font-bold text-slate-400 block uppercase tracking-wider">Hi�!u Suất Đ�ng B�" Kho</span>
-969: Đ�ng b�" Doanh thu và S� lượng theo danh mục g�c
-978: <YAxis yAxisId="right" orientation="right" stroke="#38BDF8" label={{ value: 'S� lượng (món)', angle: 90, position: 'insideRight', fill: '#38BDF8', style: { fontWeight: 'bold' } }} />
-992: <Bar yAxisId="right" dataKey="quantity" name="S� lượng bán ra" radius={[6, 6, 0, 0]} barSize={40}>
-1006: <p className="text-xs text-slate-400 mt-1">Bấm chọn m�"t trong 3 danh mục dư�:i �ây �Ồ xem cụ cấu trúc doanh thu bên trong.</p>
-1055: Cơ cấu T�n kho: {selectedChartCategory}
-1087: <span className="text-xs font-bold text-slate-400 block uppercase tracking-wider">T�"ng sản phẩm</span>
-1091: <span className="text-xs font-bold text-slate-400 block uppercase tracking-wider">T�"ng s� lượng t�n</span>
-1095: <span className="text-xs font-bold text-slate-400 block uppercase tracking-wider">T�"ng doanh thu lũy kế</span>
-1120: placeholder="T�m theo m�, t�n ho�c ph�n lo�i..."
-1130: X�a
-1137: {[{ id: "all", label: "( T�t c�" }, ...uniqueCategories.map(c => ({ id: c, label: c }))].map(cat => (
-1171: <th className="py-4 px-4 w-[18%] min-w-[150px]">Danh mục g�c</th>
-1174: <th className="py-4 px-4 w-[15%] min-w-[110px] text-right">T�n kho</th>
-1220: title="Ch�0nh sửa sản phẩm"
-1244: <span>Không tìm thấy sản phẩm nào kh�:p v�:i �iều ki�!n lọc!</span>
-1259: <span className="text-xs font-bold text-slate-400 block uppercase tracking-wider">T�"ng s� xe �ẩy</span>
-1260: <b className="text-2xl font-black text-white mt-1 block">{totalCartsCount} xe �ẩy</b>
-1263: <span className="text-xs font-bold text-slate-400 block uppercase tracking-wider">Đang hoạt ��"ng</span>
-1269: <span className="text-xs font-bold text-slate-400 block uppercase tracking-wider">Không hoạt ��"ng</span>
-1293: <span>�x9 Chế ��" Danh sách (List View)</span>
-1303: <span>�x�️ Bản �� vận hành (Map View)</span>
-1314: title="Xuất file CSV toàn b�" xe �ẩy"
-1325: <span>Thêm thiết b�9 m�:i</span>
-1337: Cơ cấu trạng thái xe �ẩy
-1366: <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">T�"ng S� Xe</span>
-1387: <h3 className="text-sm font-black text-white uppercase tracking-wider">Danh sách �Ēng ký thiết b�9</h3>
-1388: <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Bấm biỒu tượng �x�️ �Ồ xem Giỏ hàng trực tuyến của xe �ang hoạt ��"ng.</p>
-1424: <option value="low">Pin yếu (dư�:i 15%)</option>
-1426: <option value="high">Pin �ầy (trên 50%)</option>
-1434: <span className="text-xs text-orange-400 font-extrabold">Đã chọn {checkedCartIds.length} xe �ẩy:</span>
-1505: <span className="text-[8px] text-slate-500">{isSorted ? (cartSortOrder === "asc" ? "��" : "��") : "� ""}</span>
-1512: {renderSortable("Mã s�", "id", "w-[10%]")}
-1513: {renderSortable("Tên thiết b�9", "name", "w-[15%]")}
-1539: <span className="text-[8px] text-slate-500">{isSorted ? (cartSortOrder === "asc" ? "��" : "��") : "� ""}</span>
-1568: <span className="text-[8px] text-slate-500">{isSorted ? (cartSortOrder === "asc" ? "��" : "��") : "� ""}</span>
-1573: return renderSortable("Kết n�i cu�i", "lastConnected", "w-[13%]");
-1630: title={`Camera: ${cart.hardwareStatus?.camera === 'Good' ? 'Hoạt ��"ng t�t' : 'L�i!'}`}
-1640: title={`Cân �i�!n tử: ${cart.hardwareStatus?.scale === 'Good' ? 'Hoạt ��"ng t�t' : 'L�i!'}`}
-1642: C�N
-1650: title={`Máy quét mã: ${cart.hardwareStatus?.barcodeScanner === 'Good' ? 'Hoạt ��"ng t�t' : 'L�i!'}`}
-1652: QU�0T
-1678: <td className="py-3 px-4 text-slate-300 truncate" title={cart.currentZone}>{cart.currentZone || "�"}</td>
-1683: cart.currentCustomer.fullName || "�"
-1685: "�"
-1717: title="Sửa thông tin xe �ẩy"
-1726: title="Xóa xe �ẩy khỏi h�! th�ng"
-1746: HiỒn th�9 <b>{tableCarts.length}</b> / <b>{tableCartsTotal}</b> xe �ẩy (Trang {cartPage} / {totalPages})
-1754: Trư�:c
-1778: <h3 className="text-sm font-black text-white uppercase tracking-wider">Bản �� vận hành IoT Real-time</h3>
-1779: <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Theo dõi v�9 trí thực tế của xe �ẩy và kiỒm soát an ninh từ xa.</p>
-1792: �x� Heatmap Overlay: {showHeatmap ? "BẬT" : "TẮT"}
-1807: <span>L�i/Offline</span>
-1836: SƠ Đ� VẬN HìNH · 2.5D OPERATIONAL PLAN
-1857: {renderBlock(637, 94, "TRÁI C�Y")}
-1858: {renderBlock(882, 94, "TH�`T & CÁ")}
-1860: {/* Đ�NG LẠNH */}
-1862: {renderBlock(1076, 286, "TỦ Đ�NG")}
-1865: {/* THỰC PHẨM KH� */}
-1866: {renderBlock(392, 235, "M�R · GẠO · GIA V�`", 235)}
-1867: {renderBlock(637, 306, "Đ� UỐNG", 235)}
-1868: {renderBlock(392, 377, "Đ� UỐNG · BÁNH KẸO", 480)}
-1869: {renderBlock(392, 448, "Đ� H��P · H�A MỸ PHẨM", 480)}
-1870: {renderBlock(392, 519, "Đ� GIA DỤNG", 480)}
-1879: {/* QUẦY THU NG�N */}
-1885: <text x="1122" y="516" fill="#F97316" fontWeight="800" textAnchor="middle" fontSize="17">QUẦY THU NG�N</text>
-2024: <span className="text-slate-200 font-bold">{selectedMapCart.currentZone || 'Không xác ��9nh'}</span>
-2029: <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Kết n�i phần cứng:</span>
-2035: C�N
-2038: MÁY QU�0T
-2083: <p className="text-xs text-slate-400 mt-1">Phát hi�!n tự ��"ng các �iỒm l�!ch trọng lượng và hành vi gian lận qua camera giỏ hàng.</p>
-2089: <span>{alerts.filter(a => a.status === "pending" && a.severity === "high").length} L�I NGI�`M TR�RNG</span>
-2095: addLog("Admin duy�!t thông qua tất cả các cảnh báo an ninh hi�!n tại.", "success");
-2151: <span className="text-slate-400">Thiết b�9 ngu�n:</span>
-2173: <span>Bỏ qua / Duy�!t</span>
-2187: <span>Sự c� �ã �ược giải quyết</span>
-2204: <h3 className="text-base font-black text-white uppercase tracking-wider">Thông báo và sự ki�!n thời gian thực</h3>
-2205: <p className="text-xs text-slate-400 mt-1">Thông tin ��ng b�" từ cảm biến trọng lực, Camera nhận di�!n và mạng xe �ẩy.</p>
-2210: addLog("Kỹ thuật viên yêu cầu ��ng b�" cứng tất cả các node xe �ẩy...", "info");
-2211: alert("Đang tiến hành ping và ��ng b�" gateway...");
-2216: <span>Đ�ng b�" cứng h�! th�ng</span>
-2257: addLog("Nhật ký Gateway �ã �ược dọn sạch.", "info");
-2266: addLog("Kỹ thuật viên kích hoạt tải lại kết n�i IoT Hub...", "warning");
-2267: alert("Đang tái tạo c�"ng kết n�i...");
-2271: Tải lại C�"ng Kết N�i Gateway (Uplink Reboot)
-2362: {selectedSessionCart.status === "active" ? "Đang hoạt ��"ng" : "Bảo Trì"}
-2370: <span className="text-slate-400">Cập nhật mạng cu�i:</span>
-2397: Giỏ hàng hi�!n tại �ang tr�ng!
-2410: <span className="text-slate-400 text-xs uppercase tracking-wider">T�"ng tạm tính:</span>
-2463: {editingProduct ? `Sửa Sản Phẩm: ${editingProduct.id}` : "Thêm Sản Phẩm M�:i"}
-2487: <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Phân loại g�c</label>
-2493: <option value="Hàng tươi s�ng">�x�� Hàng tươi s�ng</option>
-2494: <option value="Thực phẩm khô & �� u�ng">�x� Thực phẩm khô & �� u�ng</option>
-2495: <option value="Đông lạnh">�️ Đông lạnh</option>
-2518: placeholder="ví dụ: Th�9t tươi, Hải sản..."
-2537: <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">S� lượng trong kho</label>
-2542: placeholder="T�n kho"
-2553: placeholder="Không nhập sẽ tính tự ��"ng"
-2571: Lưu thay ��"i
-2587: {editingCart ? `Sửa thiết b�9: ${editingCart.id}` : "Thêm thiết b�9 xe m�:i"}
-2600: <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Mã thiết b�9</label>
-2610: <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Tên xe �ẩy</label>
-2615: placeholder="Nhập tên xe �ẩy..."
-2622: <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Trạng thái hoạt ��"ng</label>
-2628: <option value="active">Đang hoạt ��"ng</option>
-2629: <option value="inactive">Không hoạt ��"ng</option>
-2659: Lưu thiết b�9

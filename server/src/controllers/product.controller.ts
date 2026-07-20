@@ -16,6 +16,14 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
 
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
   try {
+    const { barcode } = req.body;
+    if (barcode) {
+      const existing = await Product.findOne({ barcode });
+      if (existing) {
+        res.status(400).json({ message: 'Mã barcode này đã tồn tại trong hệ thống.' });
+        return;
+      }
+    }
     const newProduct = new Product(req.body);
     const saved = await newProduct.save();
     res.status(201).json(saved);
@@ -27,6 +35,16 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 export const updateProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    const { barcode } = req.body;
+    
+    if (barcode) {
+      const existing = await Product.findOne({ barcode });
+      if (existing && existing.id !== id) {
+        res.status(400).json({ message: 'Mã barcode này đã tồn tại trong hệ thống.' });
+        return;
+      }
+    }
+
     const updated = await Product.findOneAndUpdate({ id }, req.body, { new: true });
     if (!updated) {
       res.status(404).json({ message: `Product with ID ${id} not found` });

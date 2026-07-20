@@ -35,7 +35,7 @@ export const loginCustomer = async (req: Request, res: Response): Promise<void> 
         // Generate JWT token for admin
         const tokenSecret = process.env.JWT_SECRET || 'smartcart-secret-key-123';
         const token = jwt.sign(
-          { id: admin._id, phoneNumber: admin.phoneNumber, role: 'admin' },
+          { id: admin._id, phoneNumber: admin.phoneNumber, role: admin.role },
           tokenSecret,
           { expiresIn: '30d' }
         );
@@ -46,13 +46,13 @@ export const loginCustomer = async (req: Request, res: Response): Promise<void> 
             _id: admin._id,
             fullName: admin.name,
             phoneNumber: admin.phoneNumber,
-            role: 'admin',
+            role: admin.role,
             points: 0
           },
           user: {
             name: admin.name,
             phoneNumber: admin.phoneNumber,
-            role: 'admin'
+            role: admin.role
           }
         });
         return;

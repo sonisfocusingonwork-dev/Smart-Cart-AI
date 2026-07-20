@@ -60,10 +60,10 @@ export const HelpdeskTab = () => {
   const resolvedTickets = tickets.filter(t => t.status === 'resolved');
 
   const TicketCard = ({ ticket }: { ticket: Ticket }) => (
-    <div className={`p-4 rounded-xl border ${ticket.status === 'open' ? 'bg-[#1E293B] border-orange-500/30' : 'bg-[#0F172A] border-white/5 opacity-70'} flex flex-col gap-3 relative`}>
+    <div className={`p-4 rounded-2xl border ${ticket.status === 'open' ? 'bg-[#1E293B] border-[#15803D]/30' : 'bg-[#1E293B] border-[#E2E8F0] opacity-70'} flex flex-col gap-3 relative`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${ticket.issueType === 'hardware' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}`}>
+          <div className={`h-8 w-8 rounded-2xl flex items-center justify-center ${ticket.issueType === 'hardware' ? 'bg-[#15803D]/20 text-[#15803D]' : 'bg-blue-500/20 text-blue-400'}`}>
             {ticket.issueType === 'hardware' ? <MonitorPlay size={16} /> : <MessageSquare size={16} />}
           </div>
           <div>
@@ -71,7 +71,7 @@ export const HelpdeskTab = () => {
             <span className="text-[10px] text-slate-400 font-semibold">{new Date(ticket.createdAt).toLocaleTimeString('vi-VN')} - {new Date(ticket.createdAt).toLocaleDateString('vi-VN')}</span>
           </div>
         </div>
-        <div className={`px-2 py-1 rounded text-[10px] font-black uppercase ${ticket.status === 'open' ? 'bg-orange-500/20 text-orange-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+        <div className={`px-2 py-1 rounded text-[10px] font-black uppercase ${ticket.status === 'open' ? 'bg-[#15803D]/20 text-[#15803D]' : 'bg-[#15803D]/20 text-[#8CB867]'}`}>
           {ticket.status === 'open' ? 'MỚI TẠO' : 'ĐÃ XỬ LÝ'}
         </div>
       </div>
@@ -90,7 +90,7 @@ export const HelpdeskTab = () => {
       {ticket.status === 'open' && (
         <button
           onClick={() => handleResolve(ticket._id)}
-          className="mt-2 w-full py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-colors flex items-center justify-center gap-2"
+          className="mt-2 w-full py-2 rounded-2xl bg-[#15803D] hover:bg-[#15803D] text-white text-xs font-bold transition-colors flex items-center justify-center gap-2"
         >
           <CheckCircle size={14} />
           XÁC NHẬN ĐÃ XỬ LÝ
@@ -112,13 +112,13 @@ export const HelpdeskTab = () => {
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
         {/* Open Tickets Column */}
-        <div className="flex flex-col bg-black/20 rounded-2xl border border-white/5 overflow-hidden">
-          <div className="p-4 border-b border-white/5 bg-orange-500/10 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-orange-400 flex items-center gap-2">
+        <div className="flex flex-col bg-[#F5F5E6] rounded-2xl border border-[#E2E8F0] overflow-hidden">
+          <div className="p-4 border-b border-[#E2E8F0] bg-[#15803D]/10 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[#15803D] flex items-center gap-2">
               <Clock size={16} />
               CẦN XỬ LÝ NGAY
             </h3>
-            <span className="bg-orange-500 text-white text-xs font-black px-2 py-0.5 rounded-full">{openTickets.length}</span>
+            <span className="bg-[#15803D] text-white text-xs font-black px-2 py-0.5 rounded-full">{openTickets.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {openTickets.length === 0 ? (
@@ -130,13 +130,13 @@ export const HelpdeskTab = () => {
         </div>
 
         {/* Resolved Tickets Column */}
-        <div className="flex flex-col bg-black/20 rounded-2xl border border-white/5 overflow-hidden">
-          <div className="p-4 border-b border-white/5 bg-emerald-500/10 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+        <div className="flex flex-col bg-[#F5F5E6] rounded-2xl border border-[#E2E8F0] overflow-hidden">
+          <div className="p-4 border-b border-[#E2E8F0] bg-[#15803D]/10 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[#8CB867] flex items-center gap-2">
               <CheckCircle size={16} />
               ĐÃ GIẢI QUYẾT
             </h3>
-            <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-black px-2 py-0.5 rounded-full">{resolvedTickets.length}</span>
+            <span className="bg-[#15803D]/20 text-[#8CB867] border border-[#15803D]/30 text-xs font-black px-2 py-0.5 rounded-full">{resolvedTickets.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {resolvedTickets.length === 0 ? (

@@ -33,6 +33,8 @@ export function MapScreen({
   manualList,
   toggleCheckItem,
   addNewManualItem,
+  pendingNavTarget,
+  setPendingNavTarget,
 }: {
   go: (s: Screen) => void;
   cartCount: number;
@@ -43,6 +45,8 @@ export function MapScreen({
   manualList: ShoppingListItem[];
   toggleCheckItem: (idx: number) => void;
   addNewManualItem: (name: string) => void;
+  pendingNavTarget?: StoreProductLocation | null;
+  setPendingNavTarget?: (t: StoreProductLocation | null) => void;
 }) {
   const [chat, setChat] = useState(false);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -127,6 +131,13 @@ export function MapScreen({
       ),
     ]);
   };
+
+  useEffect(() => {
+    if (pendingNavTarget) {
+      activateRoute(pendingNavTarget, "manual");
+      if (setPendingNavTarget) setPendingNavTarget(null);
+    }
+  }, [pendingNavTarget]);
 
   const selectZoneFromMap = (zone: string) => {
     const hasProducts = STORE_LOCATIONS.some(
@@ -287,7 +298,7 @@ export function MapScreen({
     label,
     zone,
     w = 170,
-    h = 56,
+    h = 32,
   }: {
     x: number;
     y: number;
@@ -299,6 +310,10 @@ export function MapScreen({
     const highlighted = Boolean(
       zone && (selectedZone === zone || activeRoute?.zone === zone),
     );
+    const fillColor = highlighted ? "#D1FAE5" : "#FFFFFF";
+    const strokeColor = "#15803D";
+    const textColor = "#334155";
+    
     return (
       <g
         transform={`translate(${x} ${y}) scale(0.98)`}
@@ -310,27 +325,27 @@ export function MapScreen({
       >
         <polygon
           points={`0,18 ${w},18 ${w + 24},0 24,0`}
-          fill={highlighted ? "#1E293B" : "#0F172A"}
-          stroke="#F97316"
-          strokeWidth={highlighted ? 4 : 1.5}
+          fill={fillColor}
+          stroke={strokeColor}
+          strokeWidth="1.5"
         />
         <polygon
           points={`${w},18 ${w + 24},0 ${w + 24},${h - 10} ${w},${h + 7}`}
-          fill={highlighted ? "#1E293B" : "#0F172A"}
-          stroke={highlighted ? "#F97316" : "none"}
-          strokeWidth={highlighted ? 2 : 0}
+          fill={fillColor}
+          stroke={strokeColor}
+          strokeWidth="1.5"
         />
         <polygon
           points={`0,18 ${w},18 ${w},${h + 7} 0,${h + 7}`}
-          fill={highlighted ? "#1E293B" : "#0F172A"}
-          stroke={highlighted ? "#F97316" : "none"}
-          strokeWidth={highlighted ? 2 : 0}
+          fill={fillColor}
+          stroke={strokeColor}
+          strokeWidth="1.5"
         />
         <text
-          x={w / 2}
-          y={47}
+          x={w / 2 + 12}
+          y={36}
           textAnchor="middle"
-          fill="#F97316"
+          fill={textColor}
           fontSize="13"
           fontWeight="800"
         >
@@ -346,27 +361,27 @@ export function MapScreen({
       aria-label="Bản đồ siêu thị isometric"
     >
       {/* HEADER SECTION */}
-      <div className="shrink-0 flex flex-col z-40 bg-[#0F172A] border-b border-[#F97316]/20 shadow-md">
+      <div className="shrink-0 flex flex-col z-40 bg-[#F5F5E6] border-b border-[#15803D]/20 shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)]">
         {/* Top status bar (now flows naturally) */}
         <TopStatusBar onHelp={openHelpChat} />
         
         {/* Navigation & Controls Bar */}
-        <div className="h-16 bg-white border-b border-[#CBD5E1] px-6 flex items-center justify-between gap-4 relative">
+        <div className="h-16 bg-white border-b border-[#E2E8F0] px-6 flex items-center justify-between gap-4 relative">
           {/* Left Title */}
           <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0F172A] text-[#F97316] shadow-sm">
+            <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#F5F5E6] shadow-sm border border-[#E2E8F0] text-[#15803D] shadow-sm">
               <Map size={18} />
             </span>
             <div className="hidden sm:block">
-              <h1 className="text-xs font-black tracking-wider text-[#0F172A] uppercase">Sơ Đồ Siêu Thị</h1>
-              <span className="text-[10px] text-[#F97316] font-bold block leading-none">2.5D INTERACTIVE MAP</span>
+              <h1 className="text-xs font-black tracking-wider text-[#334155] uppercase">Sơ Đồ Siêu Thị</h1>
+              <span className="text-[10px] text-[#15803D] font-bold block leading-none">2.5D INTERACTIVE MAP</span>
             </div>
           </div>
 
           {/* Center Search Form */}
           <form
             onSubmit={handleMapSearch}
-            className="flex-1 max-w-[460px] relative rounded-xl border border-[#F97316]/50 bg-[#F8FAFC] p-1 focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/10 transition-all"
+            className="flex-1 max-w-[460px] relative rounded-2xl border border-[#15803D]/50 bg-[#F8FAFC] p-1 focus-within:border-[#15803D] focus-within:ring-2 focus-within:ring-[#D3524B]/10 transition-all"
           >
             <div className="flex h-9 items-center gap-2.5 px-3">
               <Search size={16} className="text-slate-400" />
@@ -379,11 +394,11 @@ export function MapScreen({
                 onFocus={() => setSearchOpen(true)}
                 onBlur={() => window.setTimeout(() => setSearchOpen(false), 120)}
                 placeholder="Tìm sản phẩm, thương hiệu hoặc khu vực..."
-                className="h-full min-w-0 flex-1 bg-transparent text-xs font-semibold text-[#0F172A] outline-none placeholder:text-slate-400"
+                className="h-full min-w-0 flex-1 bg-transparent text-xs font-semibold text-[#334155] outline-none placeholder:text-slate-400"
               />
               <button
                 type="submit"
-                className="rounded-lg bg-[#F97316] px-3 py-1.5 text-[10px] font-black text-[#0F172A] hover:bg-orange-600 transition-colors"
+                className="rounded-2xl bg-[#15803D] shadow-md px-3 py-1.5 text-[10px] font-black text-white hover:bg-[#15803D] transition-colors"
               >
                 Tìm đường
               </button>
@@ -391,7 +406,7 @@ export function MapScreen({
             
             {/* Search Dropdown list */}
             {searchOpen && searchQuery.trim() && (
-              <div className="absolute inset-x-0 top-11 max-h-64 overflow-y-auto rounded-xl border border-[#CBD5E1] bg-white p-1.5 shadow-xl z-50 [scrollbar-width:none]">
+              <div className="absolute inset-x-0 top-11 max-h-64 overflow-y-auto rounded-2xl border border-[#E2E8F0] bg-white shadow-sm border border-[#E2E8F0] p-1.5 shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] z-50 [scrollbar-width:none]">
                 {searchResults.length > 0 ? (
                   searchResults.map((location) => (
                     <button
@@ -402,13 +417,13 @@ export function MapScreen({
                         setSearchQuery(location.name);
                         activateRoute(location, "manual");
                       }}
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left hover:bg-[#FFF7ED] transition-colors"
+                      className="flex w-full items-center gap-2 rounded-2xl px-2.5 py-2 text-left hover:bg-[#FFF7ED] transition-colors"
                     >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#0F172A] text-[#F97316]">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-2xl bg-[#F5F5E6] text-[#15803D]">
                         <Map size={13} />
                       </span>
                       <span className="min-w-0">
-                        <b className="block truncate text-xs text-[#0F172A]">
+                        <b className="block truncate text-xs text-[#334155]">
                           {location.name}
                         </b>
                         <span className="block truncate text-[10px] font-semibold text-[#64748B]">
@@ -437,14 +452,14 @@ export function MapScreen({
             
             {/* Shopping List Popup */}
             {showListPopup && (
-              <div className="absolute right-6 top-14 z-50 w-[310px] rounded-3xl border border-[#F97316] bg-[#FEF9ED] p-5 text-[#0F172A] shadow-[0_16px_36px_rgba(17,17,17,.25)] backdrop-blur-xl">
-                <div className="mb-3 flex items-center justify-between border-b border-[#F97316]/30 pb-2">
-                  <span className="text-base font-black italic tracking-widest text-[#EA580C]">
+              <div className="absolute right-6 top-14 z-50 w-[310px] rounded-3xl border border-[#15803D] bg-[#FEF9ED] p-5 text-[#334155] shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] ">
+                <div className="mb-3 flex items-center justify-between border-b border-[#15803D]/30 pb-2">
+                  <span className="text-base font-black italic tracking-widest text-[#15803D]">
                     shopping list
                   </span>
                   <button
                     onClick={toggleListPopup}
-                    className="rounded-lg p-1 hover:bg-black/5"
+                    className="rounded-2xl p-1 hover:bg-[#334155]/5"
                   >
                     <X size={16} />
                   </button>
@@ -462,9 +477,9 @@ export function MapScreen({
                     value={localInput}
                     onChange={(event) => setLocalInput(event.target.value)}
                     placeholder="Thêm việc cần mua..."
-                    className="h-8 flex-1 rounded-lg border border-[#CBD5E1] bg-white px-2.5 text-xs font-bold outline-none focus:border-[#F97316]"
+                    className="h-8 flex-1 rounded-2xl border border-[#E2E8F0] bg-white px-2.5 text-xs font-bold outline-none focus:border-[#15803D]"
                   />
-                  <button className="h-8 rounded-lg bg-[#F97316] px-3 text-xs font-black text-white">
+                  <button className="h-8 rounded-2xl bg-[#15803D] shadow-md px-3 text-xs font-black text-white">
                     +
                   </button>
                 </form>
@@ -479,16 +494,16 @@ export function MapScreen({
                         {item.checked ? (
                           <CheckCircle2
                             size={18}
-                            className="shrink-0 text-[#F97316]"
+                            className="shrink-0 text-[#15803D]"
                           />
                         ) : (
                           <Circle
                             size={18}
-                            className="shrink-0 text-[#CBD5E1] group-hover:text-[#F97316]"
+                            className="shrink-0 text-[#475569] group-hover:text-[#15803D]"
                           />
                         )}
                         <span
-                          className={`text-xs font-extrabold ${item.checked ? "text-[#94A3B8] line-through" : "text-[#0F172A]"}`}
+                          className={`text-xs font-extrabold ${item.checked ? "text-[#94A3B8] line-through" : "text-[#334155]"}`}
                         >
                           {item.name}
                         </span>
@@ -511,21 +526,14 @@ export function MapScreen({
           role="img"
         >
         <defs>
-          <filter id="isoShadow" x="-15%" y="-20%" width="140%" height="150%">
+          <filter id="isoShadow" x="-10%" y="-10%" width="120%" height="120%">
             <feDropShadow
-              dx="9"
-              dy="11"
-              stdDeviation="6"
-              floodColor="#0F172A"
-              floodOpacity=".23"
+              dx="4"
+              dy="4"
+              stdDeviation="0"
+              floodColor="#334155"
+              floodOpacity="0.04"
             />
-          </filter>
-          <filter id="isoGlow">
-            <feGaussianBlur stdDeviation="4" result="b" />
-            <feMerge>
-              <feMergeNode in="b" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
           </filter>
           <pattern
             id="floorGrid"
@@ -560,13 +568,13 @@ export function MapScreen({
           rx="24"
           fill="url(#floorGrid)"
         />
-        <g fill="none" stroke="#F97316" strokeWidth="2" opacity=".55">
+        <g fill="none" stroke="#15803D" strokeWidth="2" opacity=".25">
           <path d="M338 65V668M970 65V668M65 225H1295M65 520H1295" />
         </g>
         <text
           x="76"
           y="84"
-          fill="#0F172A"
+          fill="#15803D"
           fontSize="14"
           fontWeight="900"
           letterSpacing="2"
@@ -580,9 +588,9 @@ export function MapScreen({
             width="108"
             height="104"
             rx="12"
-            fill={activeRoute?.zone === "Lối vào" ? "#1E293B" : "#0F172A"}
-            stroke="#F97316"
-            strokeWidth={activeRoute?.zone === "Lối vào" ? 4 : 2}
+            fill={activeRoute?.zone === "Lối vào" ? "#D1FAE5" : "#FFFFFF"}
+            stroke="#15803D"
+            strokeWidth={2}
             onClick={() => selectZoneFromMap("Lối vào")}
             className="cursor-pointer"
           />
@@ -592,9 +600,9 @@ export function MapScreen({
             width="108"
             height="104"
             rx="12"
-            fill={activeRoute?.zone === "Lối ra" ? "#1E293B" : "#0F172A"}
-            stroke="#F97316"
-            strokeWidth={activeRoute?.zone === "Lối ra" ? 4 : 2}
+            fill={activeRoute?.zone === "Lối ra" ? "#D1FAE5" : "#FFFFFF"}
+            stroke="#15803D"
+            strokeWidth={2}
             onClick={() => selectZoneFromMap("Lối ra")}
             className="cursor-pointer"
           />
@@ -607,13 +615,13 @@ export function MapScreen({
             height="92"
             rx="14"
             fill={
-              activeRoute?.zone === "Trạm Xe Đẩy AI" ? "#1E293B" : "#0F172A"
+              activeRoute?.zone === "Trạm Xe Đẩy AI" ? "#D1FAE5" : "#FFFFFF"
             }
-            stroke="#F97316"
-            strokeWidth={activeRoute?.zone === "Trạm Xe Đẩy AI" ? 4 : 2}
+            stroke="#15803D"
+            strokeWidth={2}
           />
         </g>
-        <g fill="#F97316" fontWeight="800" textAnchor="middle">
+        <g fill="#334155" fontWeight="800" textAnchor="middle">
           <text x="130" y="602" fontSize="15">
             LỐI VÀO
           </text>
@@ -623,20 +631,20 @@ export function MapScreen({
           <text x="193" y="332" fontSize="16">
             TRẠM XE ĐẨY AI
           </text>
-          <text x="193" y="354" fontSize="11">
+          <text x="193" y="354" fontSize="11" fill="#15803D">
             KHU SẠC &amp; NHẬN XE
           </text>
         </g>
-        <g stroke="#F97316" strokeWidth="3">
+        <g stroke="#15803D" strokeWidth="3">
           <path d="M99 621h62M225 621h62" />
         </g>
-        <text x="530" y="112" fill="#EA580C" fontSize="18" fontWeight="900">
+        <text x="530" y="112" fill="#15803D" fontSize="18" fontWeight="900">
           HÀNG TƯƠI SỐNG
         </text>
         <Block x={390} y={138} label="RAU CỦ" zone="Rau củ" w={155} />
         <Block x={575} y={138} label="TRÁI CÂY" zone="Trái cây" w={155} />
         <Block x={760} y={138} label="THỊT & CÁ" zone="Thịt & Cá" w={155} />
-        <text x="1090" y="112" fill="#EA580C" fontSize="18" fontWeight="900">
+        <text x="1090" y="112" fill="#15803D" fontSize="18" fontWeight="900">
           ĐÔNG LẠNH
         </text>
         <Block x={1000} y={138} label="TỦ MÁT" zone="Tủ mát" w={235} h={66} />
@@ -649,7 +657,7 @@ export function MapScreen({
           w={235}
           h={66}
         />
-        <text x="600" y="278" fill="#EA580C" fontSize="18" fontWeight="900">
+        <text x="600" y="278" fill="#15803D" fontSize="18" fontWeight="900">
           THỰC PHẨM KHÔ &amp; ĐỒ UỐNG
         </text>
         <Block
@@ -694,9 +702,9 @@ export function MapScreen({
             width="244"
             height="170"
             rx="16"
-            fill={activeRoute?.zone === "Quầy Thu Ngân" ? "#1E293B" : "#0F172A"}
-            stroke="#F97316"
-            strokeWidth={activeRoute?.zone === "Quầy Thu Ngân" ? 4 : 2}
+            fill={activeRoute?.zone === "Quầy Thu Ngân" ? "#D1FAE5" : "#FFFFFF"}
+            stroke="#15803D"
+            strokeWidth={2}
           />
           <rect
             x="1018"
@@ -704,8 +712,9 @@ export function MapScreen({
             width="55"
             height="82"
             rx="8"
-            fill="#0F172A"
-            stroke="#F97316"
+            fill="#FFFFFF"
+            stroke="#15803D"
+            strokeWidth="2"
           />
           <rect
             x="1092"
@@ -713,8 +722,9 @@ export function MapScreen({
             width="55"
             height="82"
             rx="8"
-            fill="#0F172A"
-            stroke="#F97316"
+            fill="#FFFFFF"
+            stroke="#15803D"
+            strokeWidth="2"
           />
           <rect
             x="1166"
@@ -722,11 +732,12 @@ export function MapScreen({
             width="55"
             height="82"
             rx="8"
-            fill="#0F172A"
-            stroke="#F97316"
+            fill="#FFFFFF"
+            stroke="#15803D"
+            strokeWidth="2"
           />
         </g>
-        <g fill="#F97316" fontWeight="800" textAnchor="middle">
+        <g fill="#334155" fontWeight="800" textAnchor="middle">
           <text x="1122" y="516" fontSize="17">
             QUẦY THU NGÂN
           </text>
@@ -742,14 +753,14 @@ export function MapScreen({
         </g>
 
         {activeRoute && (
-          <g filter="url(#isoGlow)">
+          <g filter="url(#isoShadow)">
             <polyline
               points={activeRoute.path
                 .map((point) => `${point.x},${point.y}`)
                 .join(" ")}
               fill="none"
-              stroke="#F97316"
-              strokeWidth="7"
+              stroke="#15803D"
+              strokeWidth="5"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeDasharray="15 12"
@@ -758,14 +769,14 @@ export function MapScreen({
               cx={activeRoute.point.x}
               cy={activeRoute.point.y}
               r="19"
-              fill="#0F172A"
-              stroke="#F97316"
-              strokeWidth="5"
+              fill="#15803D"
+              stroke="#FFFFFF"
+              strokeWidth="4"
             />
             <text
               x={activeRoute.point.x}
               y={activeRoute.point.y + 4}
-              fill="#F97316"
+              fill="#FFFFFF"
               fontSize="11"
               fontWeight="900"
               textAnchor="middle"
@@ -775,10 +786,10 @@ export function MapScreen({
           </g>
         )}
         <g transform={`translate(${USER_MAP_POINT.x} ${USER_MAP_POINT.y})`}>
-          <ellipse cy="31" rx="29" ry="8" fill="#0F172A" opacity=".2" />
-          <circle r="22" fill="#F97316" stroke="#FFF" strokeWidth="4" />
+          <ellipse cy="31" rx="29" ry="8" fill="#15803D" opacity=".2" />
+          <circle r="22" fill="#15803D" stroke="#FFF" strokeWidth="4" />
           <circle r="6" fill="#FFF" />
-          <rect x="-28" y="29" width="56" height="22" rx="11" fill="#F97316" />
+          <rect x="-28" y="29" width="56" height="22" rx="11" fill="#15803D" />
           <text
             x="0"
             y="44"
@@ -793,17 +804,17 @@ export function MapScreen({
       </svg>
 
       {selectedZone && (
-        <div className="absolute bottom-7 left-7 z-30 w-[370px] overflow-hidden rounded-3xl border border-[#F97316] bg-white/94 shadow-[0_0_25px_rgba(249,115,22,.24),0_16px_30px_rgba(17,17,17,.18)] backdrop-blur-xl">
-          <div className="flex items-center justify-between bg-[#0F172A] px-5 py-3 text-white">
+        <div className="absolute bottom-7 left-7 z-30 w-[370px] overflow-hidden rounded-3xl border border-[#15803D] bg-white shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] ">
+          <div className="flex items-center justify-between bg-[#F5F5E6] px-5 py-3 text-[#334155]">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#F97316]">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#15803D]">
                 Danh mục khu vực
               </p>
               <h2 className="text-lg font-black">{selectedZone}</h2>
             </div>
             <button
               onClick={() => setSelectedZone(null)}
-              className="rounded-lg p-2 hover:bg-white/10"
+              className="rounded-2xl p-2 hover:bg-white"
               aria-label="Đóng danh mục"
             >
               <X size={19} />
@@ -815,9 +826,9 @@ export function MapScreen({
                 <button
                   key={location.id}
                   onClick={() => activateRoute(location, "manual")}
-                  className="rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] px-3 py-3 text-left hover:border-[#F97316] hover:bg-[#FFF7ED]"
+                  className="rounded-2xl border border-[#E2E8F0] bg-[#FFFFFF] px-3 py-3 text-left hover:border-[#15803D] hover:bg-[#FFF7ED]"
                 >
-                  <span className="block text-sm font-black text-[#0F172A]">
+                  <span className="block text-sm font-black text-[#334155]">
                     {location.name}
                   </span>
                   <span className="mt-1 block text-[10px] font-bold text-[#64748B]">
@@ -831,16 +842,16 @@ export function MapScreen({
       )}
 
       {!selectedZone && activeRoute && (
-        <div className="absolute bottom-7 left-7 z-30 w-[370px] rounded-3xl border border-[#F97316] bg-white/94 p-5 shadow-[0_0_25px_rgba(249,115,22,.24),0_16px_30px_rgba(17,17,17,.18)] backdrop-blur-xl">
+        <div className="absolute bottom-7 left-7 z-30 w-[370px] rounded-3xl border border-[#15803D] bg-white p-5 shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] ">
           <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0F172A] text-[#F97316]">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F5F5E6] text-[#15803D]">
               <Map size={22} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#EA580C]">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#15803D]">
                 Đang chỉ đường chính xác
               </p>
-              <h2 className="mt-1 truncate text-lg font-black text-[#0F172A]">
+              <h2 className="mt-1 truncate text-lg font-black text-[#334155]">
                 {activeRoute.name}
               </h2>
               <p className="mt-1 text-xs font-bold text-[#475569]">
@@ -849,7 +860,7 @@ export function MapScreen({
             </div>
             <button
               onClick={() => setActiveRoute(null)}
-              className="rounded-lg p-2 hover:bg-[#F1F5F9]"
+              className="rounded-2xl p-2 hover:bg-[#F1F5F9]"
               aria-label="Tắt chỉ đường"
             >
               <X size={18} />
@@ -861,20 +872,20 @@ export function MapScreen({
 
 
       {chat && (
-        <div className="absolute bottom-24 right-7 z-40 w-[390px] overflow-hidden rounded-3xl border border-[#F97316] bg-white/96 shadow-[0_0_24px_rgba(249,115,22,.24),0_18px_40px_rgba(15,23,42,.18)] backdrop-blur-xl">
-          <div className="flex items-center gap-2 bg-[#0F172A] px-4 py-3 text-white">
-            <GoldIcon className="h-8 w-8 rounded-lg">
+        <div className="absolute bottom-24 right-7 z-40 w-[390px] overflow-hidden rounded-3xl border border-[#15803D] bg-white shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] ">
+          <div className="flex items-center gap-2 bg-[#F5F5E6] px-4 py-3 text-[#334155]">
+            <GoldIcon className="h-8 w-8 rounded-2xl">
               <Bot size={17} />
             </GoldIcon>
             <div>
               <b className="block text-sm">Trợ lý Smart Cart AI</b>
-              <span className="block text-[10px] font-semibold text-emerald-400">
+              <span className="block text-[10px] font-semibold text-[#15803D]">
                 ● Đã kết nối dữ liệu cửa hàng
               </span>
             </div>
             <button
               onClick={() => setChat(false)}
-              className="ml-auto rounded-lg p-1 hover:bg-white/10"
+              className="ml-auto rounded-2xl p-1 hover:bg-white"
             >
               <X size={19} />
             </button>
@@ -889,7 +900,7 @@ export function MapScreen({
                 className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <p
-                  className={`max-w-[88%] whitespace-pre-line rounded-2xl px-3.5 py-2.5 text-sm font-semibold leading-relaxed ${message.role === "user" ? "rounded-br-md bg-[#F97316] text-[#0F172A]" : "rounded-bl-md border border-[#CBD5E1] bg-white text-[#0F172A]"}`}
+                  className={`max-w-[88%] whitespace-pre-line rounded-2xl px-3.5 py-2.5 text-sm font-semibold leading-relaxed ${message.role === "user" ? "rounded-br-md bg-[#15803D] text-white" : "rounded-bl-md border border-[#E2E8F0] bg-white text-[#334155]"}`}
                 >
                   {message.text}
                 </p>
@@ -898,7 +909,7 @@ export function MapScreen({
           </div>
           {isLoadingAI && (
               <div className="flex justify-start">
-                <div className="flex space-x-1 rounded-bl-md border border-[#CBD5E1] bg-white px-3.5 py-3 text-[#0F172A] rounded-2xl">
+                <div className="flex space-x-1 rounded-bl-md border border-[#E2E8F0] bg-white px-3.5 py-3 text-[#334155] rounded-2xl">
                   <div className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]"></div>
                   <div className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]"></div>
                   <div className="h-2 w-2 animate-bounce rounded-full bg-slate-400"></div>
@@ -906,24 +917,24 @@ export function MapScreen({
               </div>
             )}
             {pendingRoute && activeRoute?.id !== pendingRoute.id && (
-            <div className="flex gap-2 border-t border-[#CBD5E1] bg-white px-4 py-3">
+            <div className="flex gap-2 border-t border-[#E2E8F0] bg-white px-4 py-3">
               <button
                 onClick={() => activateRoute(pendingRoute, "ai")}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#F97316] py-3 text-sm font-black text-[#0F172A]"
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#15803D] py-3 text-sm font-black text-white"
               >
                 <Map size={17} />
                 Chỉ đường tới {pendingRoute.name}
               </button>
               <button
                 onClick={() => setPendingRoute(null)}
-                className="rounded-xl border border-[#CBD5E1] px-3 text-xs font-bold"
+                className="rounded-2xl border border-[#E2E8F0] px-3 text-xs font-bold"
               >
                 Để sau
               </button>
             </div>
           )}
           {pendingRoute && activeRoute?.id === pendingRoute.id && (
-            <div className="mx-4 my-3 flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-xs font-extrabold text-emerald-700">
+            <div className="mx-4 my-3 flex items-center gap-2 rounded-2xl bg-emerald-50 p-3 text-xs font-extrabold text-emerald-700">
               <CheckCircle2 size={17} /> Tuyến đường tới {pendingRoute.name}{" "}
               đang hiển thị.
             </div>
@@ -938,7 +949,7 @@ export function MapScreen({
               <button
                 key={suggestion}
                 onClick={() => ask(suggestion)}
-                className="rounded-full border border-[#F97316]/75 bg-[#FFF7ED] px-3 py-1.5 text-xs font-bold text-[#0F172A] hover:bg-[#FFEDD5]"
+                className="rounded-full border border-[#15803D]/75 bg-[#FFF7ED] px-3 py-1.5 text-xs font-bold text-[#334155] hover:bg-[#FFEDD5]"
               >
                 {suggestion}
               </button>
@@ -949,15 +960,15 @@ export function MapScreen({
               event.preventDefault();
               ask(prompt);
             }}
-            className="flex border-t border-[#CBD5E1] p-3"
+            className="flex border-t border-[#E2E8F0] p-3"
           >
             <input
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
               placeholder="Hỏi vị trí, ưu đãi hoặc món ăn..."
-              className="h-10 min-w-0 flex-1 rounded-xl bg-[#F1F5F9] px-3 text-sm outline-none focus:ring-2 focus:ring-[#F97316]"
+              className="h-10 min-w-0 flex-1 rounded-2xl bg-[#F1F5F9] px-3 text-sm outline-none focus:ring-2 focus:ring-[#D3524B]"
             />
-            <button className="ml-2 rounded-xl bg-[#F97316] px-4 text-sm font-black text-[#0F172A]">
+            <button className="ml-2 rounded-2xl bg-[#15803D] shadow-md px-4 text-sm font-black text-white">
               Gửi
             </button>
           </form>
@@ -966,7 +977,7 @@ export function MapScreen({
       <button
         onClick={() => setChat((value) => !value)}
         aria-label="Mở trợ lý AI"
-        className="absolute bottom-7 right-7 z-30 flex h-16 w-16 items-center justify-center rounded-full border-4 border-[#F97316] bg-[#F97316] text-[#0F172A] shadow-[0_0_24px_rgba(249,115,22,.65)] transition-transform hover:scale-105"
+        className="absolute bottom-7 right-7 z-30 flex h-16 w-16 items-center justify-center rounded-full border-4 border-[#15803D] bg-[#15803D] text-white shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] transition-transform hover:scale-105"
       >
         <Bot size={30} />
       </button>
