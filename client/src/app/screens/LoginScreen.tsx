@@ -27,7 +27,7 @@ type LoginScreenProps = {
   onQrLogin: () => void;
   onPhoneLogin: (customer: any) => void;
   onCreateGroup: (name: string) => void;
-  onJoinGroup: (name: string, cartId: string, code: string) => string | null;
+  onJoinGroup: (name: string, cartId: string, code: string) => Promise<string | null>;
   onAdminPortal?: () => void;
 };
 
@@ -699,13 +699,13 @@ export function LoginScreen({
           </form>
 
           <form
-            onSubmit={(event) => {
+            onSubmit={async (event) => {
               event.preventDefault();
               if (!joinName.trim() || !joinCode.trim()) {
                 setError("Vui lòng nhập tên và mã nhóm.");
                 return;
               }
-              const result = onJoinGroup(
+              const result = await onJoinGroup(
                 joinName.trim(),
                 joinCartId,
                 joinCode.trim(),

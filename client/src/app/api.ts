@@ -172,6 +172,11 @@ export const api = {
     return res.json();
   },
   async getLogs() {
+    const res = await fetch(`${API_BASE_URL}/logs`);
+    if (!res.ok) throw new Error('Failed to fetch logs');
+    return res.json();
+  },
+  async createLog(log: any) {
     const res = await fetch(`${API_BASE_URL}/logs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router";
 import { AlertTriangle, Wifi } from "lucide-react";
 import { api } from "./api";
 
@@ -52,7 +53,33 @@ const TONE_BY_CART: Record<string, string> = {
   "Cart_03 (Xe 3)": "bg-[#334155]",
 };
 
+// Map screens to URL paths
+const SCREEN_PATHS: Record<string, string> = {
+  splash: "/splash",
+  login: "/login",
+  home: "/home",
+  map: "/map",
+  cart: "/cart",
+  account: "/account",
+  group: "/group",
+  history: "/history",
+  offers: "/offers",
+  admin: "/admin",
+  "admin-login": "/admin-login",
+  gateway: "/gateway",
+  invoice: "/invoice",
+};
+
+const PATH_TO_SCREEN: Record<string, string> = {};
+for (const [screen, path] of Object.entries(SCREEN_PATHS)) {
+  PATH_TO_SCREEN[path] = screen;
+}
+// Also handle root URL
+PATH_TO_SCREEN["/"] = "splash";
+
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [screen, setScreenState] = useState<Screen>("splash");
   const [prevScreen, setPrevScreen] = useState<Screen>("home");
   const [adminName, setAdminName] = useState("Root Technician");
@@ -245,7 +272,7 @@ export default function App() {
     }).catch(err => console.error(err));
   }, []);
 
-  // Detect manual URL access to /admin
+  // Sync URL path to screen state on initial load and location changes
   useEffect(() => {
     if (typeof window !== "undefined") {
       const path = window.location.pathname;
@@ -254,7 +281,7 @@ export default function App() {
         const storedRole = window.localStorage.getItem("smartcart-user-role");
         if (storedRole && storedRole.toLowerCase() === "gatewaychecker") {
           setScreenState("gateway");
-          if (typeof window !== "undefined") window.history.replaceState({}, "", "/gateway");
+          navigate("/gateway", { replace: true });
         } else if (storedRole && ["admin", "RootAdmin", "StoreManager", "Tech", "Security"].includes(storedRole)) {
           const storedAdminName = window.localStorage.getItem("smartcart-user-name") || "Root Technician";
           setAdminName(storedAdminName);
@@ -266,9 +293,24 @@ export default function App() {
         }
       } else if (path === "/gateway" || path.startsWith("/gateway/") || hash === "#/gateway") {
         setScreenState("gateway");
+      } else {
+        // For all other paths, sync screen state from URL
+        const matchedScreen = PATH_TO_SCREEN[path];
+        if (matchedScreen && matchedScreen !== "splash") {
+          setScreenState(matchedScreen as Screen);
+        }
       }
     }
   }, []);
+
+  // Listen for React Router location changes (back/forward navigation)
+  useEffect(() => {
+    const path = location.pathname;
+    const matchedScreen = PATH_TO_SCREEN[path];
+    if (matchedScreen && matchedScreen !== screen) {
+      setScreenState(matchedScreen as Screen);
+    }
+  }, [location.pathname]);
 
   const memberLabel = `${currentCart.member} · ${currentCart.cartId}`;
 
@@ -277,34 +319,22 @@ export default function App() {
     if (newScreen === "cart" || newScreen === "category") setPrevScreen(screen);
     setShowListPopup(false);
     setScreenState(newScreen);
+    // Navigate to the matching URL path
+    const path = SCREEN_PATHS[newScreen];
+    if (path && typeof window !== "undefined") {
+      navigate(path, { replace: true });
+    }
   };
 
   const back = useCallback(() => {
-    if (screen === "login") setScreenState("splash");
-    else if (screen === "cart" || screen === "category")
-      setScreenState(prevScreen);
-    else setScreenState("home");
+    if (screen === "login") {
+      setScreen("splash");
+    } else if (screen === "cart" || screen === "category") {
+      setScreen(prevScreen);
+    } else {
+      setScreen("home");
+    }
   }, [screen, prevScreen]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    
-    // Push a dummy state to enable the back button
-    window.history.pushState(null, "", window.location.href);
-
-    const handlePopState = (e: PopStateEvent) => {
-      e.preventDefault();
-      // Only go back if not in critical flows
-      if (screen !== "splash" && screen !== "home") {
-        back();
-        // Repush state so they can't actually exit the app
-        window.history.pushState(null, "", window.location.href);
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [back, screen]);
 
   const goToCategory = (categoryName: string) => {
     setActiveCategory(categoryName);
@@ -454,7 +484,7 @@ export default function App() {
       setItems(sharedItems);
       setManualList(sharedList);
       setSyncStatus("Xe chính đã tạo nhóm và đang chờ xe 2, xe 3");
-      setScreenState("group");
+      setScreen("group");
     } catch (err) {
       alert("Lỗi khi tạo nhóm mua sắm: " + (err as Error).message);
     }
@@ -476,13 +506,8 @@ export default function App() {
         sourceId: sourceIdRef.current
       });
 
-      const activeCarts = await api.getCarts();
-      const numMatch = cartId.match(/\d+/);
-      const cartIndex = numMatch ? numMatch[0] : "";
-      const cartObj = activeCarts.find((c: any) => c.id.endsWith(cartIndex));
-      if (cartObj) {
-        await api.updateCart(cartObj.id, { currentSession: code, status: "active" });
-      }
+      // NOTE: Not calling api.getCarts()/updateCart() because customers don't have admin tokens.
+      // Cart session assignment is handled server-side inside joinGroupSession if needed.
 
       setAuthenticated(true);
       const newMember = session.members.find((m: any) => m.cartId === cartId);
@@ -493,7 +518,7 @@ export default function App() {
       setItems(session.items);
       setManualList(session.manualList);
       setSyncStatus(`Đã tham gia nhóm ${code}`);
-      setScreenState("group");
+      setScreen("group");
       return null;
     } catch (err) {
       return (err as Error).message || "Không tìm thấy mã nhóm hoặc nhóm đã đầy.";
@@ -509,14 +534,8 @@ export default function App() {
           groupRole,
           sourceId: sourceIdRef.current
         });
-
-        const activeCarts = await api.getCarts();
-        const numMatch = currentCart.cartId.match(/\d+/);
-        const cartIndex = numMatch ? numMatch[0] : "";
-        const cartObj = activeCarts.find((c: any) => c.id.endsWith(cartIndex));
-        if (cartObj) {
-          await api.updateCart(cartObj.id, { currentSession: "", status: "inactive" });
-        }
+        // NOTE: Not calling api.getCarts()/updateCart() because customers don't have admin tokens.
+        // Cart state cleanup is handled server-side inside leaveGroupSession if needed.
       } catch (err) {
         console.error("Error leaving group session on BE:", err);
       }
@@ -667,7 +686,7 @@ export default function App() {
       setItems([]);
       setManualList([]);
       setCurrentReceipt(receipt);
-      setScreenState("invoice");
+      setScreen("invoice");
     } catch (err: any) {
       console.error("CHECKOUT_SAVE_ERROR: ", err);
       setCheckoutError(err.message || "Lỗi kết nối: Không thể lưu đơn hàng. Vui lòng thử lại!");
@@ -692,24 +711,19 @@ export default function App() {
       window.localStorage.setItem("smartcart-current-user-id", user._id || "");
       window.localStorage.setItem("smartcart-user-role", role);
       window.localStorage.setItem("smartcart-user-name", user.fullName || user.name || "Khách hàng");
-      if (role === "admin") {
-        if (user.token) {
-          window.localStorage.setItem("smartcart-admin-token", user.token);
-        }
-        window.history.pushState({}, "", "/admin");
-      } else {
-        window.history.pushState({}, "", "/home");
+      if (role === "admin" && user.token) {
+        window.localStorage.setItem("smartcart-admin-token", user.token);
       }
     }
 
     if (role === "admin" || role === "RootAdmin" || role === "StoreManager") {
       setAdminName(user.fullName || user.name || "Administrator");
-      setScreenState("admin");
+      setScreen("admin");
     } else if (role && role.toLowerCase() === "gatewaychecker") {
       setAdminName(user.fullName || user.name || "Nhân viên cổng");
-      setScreenState("gateway");
+      setScreen("gateway");
     } else {
-      setScreenState("home");
+      setScreen("home");
     }
   };
 
@@ -767,10 +781,8 @@ export default function App() {
               setAdminName(name);
               if (role && role.toLowerCase() === "gatewaychecker") {
                 setScreen("gateway");
-                if (typeof window !== "undefined") window.history.pushState({}, "", "/gateway");
               } else {
                 setScreen("admin");
-                if (typeof window !== "undefined") window.history.pushState({}, "", "/admin");
               }
             }}
           />
@@ -781,10 +793,7 @@ export default function App() {
           <AdminProtectedRoute
             userRole={currentRole}
             onRedirect={() => {
-              setScreenState("login");
-              if (typeof window !== "undefined") {
-                window.history.pushState({}, "", "/");
-              }
+              setScreen("login");
             }}
           >
             <BranchProvider>
@@ -794,10 +803,9 @@ export default function App() {
                     window.localStorage.removeItem("smartcart-admin-token");
                     window.localStorage.removeItem("smartcart-user-role");
                     window.localStorage.removeItem("smartcart-user-name");
-                    window.history.pushState({}, "", "/");
                   }
                   setAuthenticated(false);
-                  setScreenState("login");
+                  setScreen("login");
                 }}
                 adminName={adminName}
               />
@@ -805,7 +813,7 @@ export default function App() {
           </AdminProtectedRoute>
         );
       case "gateway":
-        return <GatewayPortalScreen back={() => setScreenState("login")} />;
+        return <GatewayPortalScreen back={() => setScreen("login")} />;
       case "home":
         return (
           <HomeScreen
@@ -856,7 +864,7 @@ export default function App() {
             syncStatus={syncStatus}
             back={() => {
               leaveGroup();
-              setScreenState("login");
+              setScreen("login");
             }}
             go={setScreen}
             cartCount={cartCount}
@@ -958,7 +966,7 @@ export default function App() {
     }
     setAuthenticated(false);
     setCurrentUserId("guest");
-    setScreenState("splash");
+    setScreen("splash");
   };
 
   const showNav =
