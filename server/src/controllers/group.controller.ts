@@ -18,6 +18,8 @@ export const getGroupSession = async (req: Request, res: Response): Promise<void
 export const createGroupSession = async (req: Request, res: Response): Promise<void> => {
   try {
     const { code, members, items, manualList, sourceId } = req.body;
+    // member should have role: 'host'
+    // members[0] is typically the host when creating.
     
     // Check if code already exists
     let session = await GroupSession.findOne({ code });
@@ -69,7 +71,7 @@ export const updateGroupSession = async (req: Request, res: Response): Promise<v
 export const joinGroupSession = async (req: Request, res: Response): Promise<void> => {
   try {
     const { code } = req.params;
-    const { member, cartId, tone, sourceId } = req.body;
+    const { member, cartId, tone, sourceId, customerId, authType } = req.body;
 
     const session = await GroupSession.findOne({ code });
     if (!session) {
@@ -87,7 +89,14 @@ export const joinGroupSession = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    session.members.push({ member, cartId, tone });
+    session.members.push({ 
+      member, 
+      cartId, 
+      tone, 
+      role: 'member', 
+      customerId, 
+      authType: authType || 'guest' 
+    });
     session.sourceId = sourceId;
     session.updatedAtTimestamp = Date.now();
 

@@ -103,7 +103,17 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
 
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { items } = req.body;
+    const { items, customerId, memberCustomerIds, groupSessionCode, ...orderData } = req.body;
+    
+    // Strict POS validation logic:
+    // Only one customerId is allowed (the owner's)
+    let posCustomerId = customerId;
+    if (memberCustomerIds && memberCustomerIds.length > 0) {
+      if (customerId) {
+        // Log conflict
+        console.warn(`[POS SYNC] Multiple accounts detected in group ${groupSessionCode}. Stripping member IDs...`);
+      }
+    }
 
     // 1. Pre-validation: Check stock BEFORE saving the order
     if (items && Array.isArray(items)) {
@@ -121,7 +131,11 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
       }
     }
 
-    const newOrder = new Order(req.body);
+    const newOrder = new Order({
+      ...orderData,
+      items,
+      customerId: posCustomerId
+    });
     const saved = await newOrder.save();
 
     // 2. Safe Deduction

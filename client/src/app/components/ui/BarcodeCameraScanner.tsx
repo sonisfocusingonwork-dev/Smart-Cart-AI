@@ -21,6 +21,15 @@ export function BarcodeCameraScanner({ onScanSuccess }: BarcodeCameraScannerProp
 
   // Initialize ZXing reader
   useEffect(() => {
+    // Suppress ZXing library's annoying NotFoundException console spam
+    const originalConsoleWarn = console.warn;
+    console.warn = (...args) => {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('non-ReaderException from reader')) {
+        return;
+      }
+      originalConsoleWarn(...args);
+    };
+
     const hints = new Map();
     const formats = [
       0, // Aztec
@@ -58,6 +67,7 @@ export function BarcodeCameraScanner({ onScanSuccess }: BarcodeCameraScannerProp
 
     return () => {
       stopCamera();
+      console.warn = originalConsoleWarn;
     };
   }, []);
 

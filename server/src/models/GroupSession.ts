@@ -4,6 +4,9 @@ export interface IGroupMember {
   member: string;
   cartId: string;
   tone: string;
+  role: 'host' | 'member';
+  customerId?: string;
+  authType: 'guest' | 'authenticated';
 }
 
 export interface IGroupItem {
@@ -35,6 +38,9 @@ const GroupMemberSchema = new Schema({
   member: { type: String, required: true },
   cartId: { type: String, required: true },
   tone: { type: String, required: true },
+  role: { type: String, enum: ['host', 'member'], default: 'member' },
+  customerId: { type: String },
+  authType: { type: String, enum: ['guest', 'authenticated'], default: 'guest' }
 }, { _id: false });
 
 const GroupItemSchema = new Schema({
