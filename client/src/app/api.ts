@@ -1,10 +1,4 @@
-const API_BASE_URL =
-<<<<<<< HEAD
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-=======
-  import.meta.env.VITE_API_URL?.trim() ||
-  "http://localhost:5000/api";
->>>>>>> f66e7e2 (Configure production API URL)
+const API_BASE_URL = 'http://localhost:5000/api';
 
 export const api = {
   // Products
@@ -511,4 +505,3 @@ export const api = {
     return res.json();
   }
 };
-
