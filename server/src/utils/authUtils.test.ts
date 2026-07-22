@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizePhoneNumber, normalizeAdminRole } from './authUtils.ts';
+import { normalizePhoneNumber, normalizeAdminRole } from './authUtils.js';
 
 test('normalizePhoneNumber converts international numbers to local format', () => {
   assert.equal(normalizePhoneNumber('+84901234567'), '0901234567');
