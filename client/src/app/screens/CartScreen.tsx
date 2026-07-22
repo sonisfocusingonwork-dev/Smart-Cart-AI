@@ -202,8 +202,6 @@ export function CartScreen({
               </GoldIcon>
               <h2 className="text-2xl font-black">Hóa đơn mini</h2>
             </div>
-            {[
-              ["Tạm tính", subtotal],
             <div className="flex justify-between text-sm font-bold text-[#64748B]">
               <span>Tạm tính {viewMode === 'personal' ? '(Riêng)' : ''}</span>
               <span>{formatMoney(displaySubtotal)}</span>
