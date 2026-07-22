@@ -421,11 +421,15 @@ export default function App() {
       if (
         payload &&
         payload.code === groupCode &&
-        payload.updatedAt > lastSnapshotAtRef.current &&
         payload.sourceId !== sourceIdRef.current
       ) {
         applyingRemoteRef.current = true;
-        lastSnapshotAtRef.current = payload.updatedAt;
+        
+        // Remove strict `payload.updatedAt > lastSnapshotAtRef.current` check 
+        // to prevent sync failures when devices have different system clocks (clock drift).
+        // Since WebSockets guarantee ordered delivery, we can just accept incoming updates.
+        lastSnapshotAtRef.current = Math.max(Date.now(), payload.updatedAt);
+        
         setItems(payload.items);
         setManualList(payload.manualList);
         setGroupMembers(payload.members);
