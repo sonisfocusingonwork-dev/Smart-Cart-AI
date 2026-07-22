@@ -79,17 +79,21 @@ export function LoginScreen({
 
   const fetchQrSession = async () => {
     try {
-      const hostname = window.location.hostname;
-      const res = await fetch(`http://${hostname}:5000/api/auth/qr-session/create`, { method: "POST" });
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const res = await fetch(`${apiBaseUrl}/auth/qr-session/create`, { method: "POST" });
       const data = await res.json();
       if (data.success) {
         setQrSessionId(data.sessionId);
-        setQrUrl(`http://${hostname}:5173/auth/pair?sessionId=${data.sessionId}`);
+        const clientOrigin = window.location.origin;
+        setQrUrl(`${clientOrigin}/auth/pair?sessionId=${data.sessionId}`);
         setQrStatus("WAITING");
         setQrCountdown(60);
         
         if (socketRef.current) socketRef.current.disconnect();
-        const socket = io(`http://${hostname}:5000`);
+        const socket = io(apiBaseUrl.replace(/\/api$/, ''), {
+          transports: ["websocket", "polling"],
+          reconnection: true,
+        });
         socketRef.current = socket;
         
         socket.emit("join-qr-room", data.sessionId);

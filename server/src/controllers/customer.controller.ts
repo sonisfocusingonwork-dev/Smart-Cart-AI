@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import Customer from '../models/Customer.js';
 import Admin from '../models/Admin.js';
 import { sendVerificationEmail } from '../config/mail.js';
+import { normalizePhoneNumber, normalizeAdminRole } from '../utils/authUtils.js';
 
 export const getCustomers = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -25,7 +26,7 @@ export const loginCustomer = async (req: Request, res: Response): Promise<void> 
     const loginId = phoneNumber.trim();
     const pin = pinCode.trim();
 
-    const cleanPhone = loginId.replace(/\s+/g, '');
+    const cleanPhone = normalizePhoneNumber(loginId);
 
     // 1. Check Admin database first
     const admin = await Admin.findOne({ phoneNumber: cleanPhone });
@@ -46,13 +47,13 @@ export const loginCustomer = async (req: Request, res: Response): Promise<void> 
             _id: admin._id,
             fullName: admin.name,
             phoneNumber: admin.phoneNumber,
-            role: admin.role,
+            role: normalizeAdminRole(admin.role),
             points: 0
           },
           user: {
             name: admin.name,
             phoneNumber: admin.phoneNumber,
-            role: admin.role
+            role: normalizeAdminRole(admin.role)
           }
         });
         return;
@@ -148,7 +149,7 @@ export const registerCustomer = async (req: Request, res: Response): Promise<voi
 
     const cleanFullName = fullName.trim();
     const numAge = Number(age);
-    const cleanPhone = phoneNumber.replace(/\s+/g, '').trim();
+    const cleanPhone = normalizePhoneNumber(phoneNumber);
     const pin = pinCode.trim();
 
     if (numAge <= 0) {

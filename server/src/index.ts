@@ -101,6 +101,40 @@ io.on('connection', (socket) => {
     console.log(`Socket ${socket.id} joined QR room: qr-${sessionId}`);
   });
 
+  // --- GROUP SHOPPING SYNC ---
+
+  // 1. Join a group room
+  socket.on('joinGroup', (data) => {
+    const { groupId, memberInfo } = data;
+    if (groupId) {
+      // Dùng socket.join để chỉ cho vào chung 1 phòng, không phát lung tung
+      socket.join(`group-${groupId}`);
+      console.log(`Socket ${socket.id} joined group room: group-${groupId}`);
+      
+      // Báo cho cả phòng biết có sự thay đổi về thành viên (để UI cập nhật)
+      io.to(`group-${groupId}`).emit('groupMembersUpdated', { groupId, memberInfo });
+    }
+  });
+
+  // 2. Leave a group room
+  socket.on('leaveGroup', (data) => {
+    const { groupId } = data;
+    if (groupId) {
+      socket.leave(`group-${groupId}`);
+      console.log(`Socket ${socket.id} left group room: group-${groupId}`);
+      io.to(`group-${groupId}`).emit('groupMembersUpdated', { groupId });
+    }
+  });
+
+  // 3. Sync cart items
+  socket.on('addItemToGroupCart', (data) => {
+    const { groupId, payload } = data;
+    if (groupId && payload) {
+      // Phát tới TẤT CẢ mọi người trong phòng TRỪ người gửi
+      socket.to(`group-${groupId}`).emit('groupCartUpdated', payload);
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });

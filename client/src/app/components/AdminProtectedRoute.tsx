@@ -7,8 +7,9 @@ type AdminProtectedRouteProps = {
 };
 
 export function AdminProtectedRoute({ children, userRole, onRedirect }: AdminProtectedRouteProps) {
-  const allowedRoles = ["admin", "RootAdmin", "StoreManager", "Tech", "Security"];
-  const isAdmin = userRole && allowedRoles.includes(userRole);
+  const normalizedRole = (userRole || "").trim().toLowerCase();
+  const allowedRoles = ["admin", "rootadmin", "storemanager", "tech", "security", "gatewaychecker"];
+  const isAdmin = Boolean(normalizedRole && allowedRoles.includes(normalizedRole));
 
   if (!isAdmin) {
     return (

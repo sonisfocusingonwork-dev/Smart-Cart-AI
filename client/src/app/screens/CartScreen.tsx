@@ -43,9 +43,20 @@ export function CartScreen({
   checkout: CheckoutSummary;
   groupCode: string;
   onPaymentSuccess: (receipt: CompletedReceipt) => void;
+  currentCartLabel?: string; // e.g. "Khách hàng · Cart_01 (Xe chính)"
 }) {
   const [confirm, setConfirm] = useState(false);
   const [methods, setMethods] = useState(false);
+  const [viewMode, setViewMode] = useState<'shared' | 'personal'>('shared');
+
+  const displayItems = viewMode === 'shared' || !groupCode
+    ? items
+    : items.filter(item => item.addedBy === currentCartLabel);
+
+  const displaySubtotal = displayItems.reduce((acc, it) => acc + (it.price * it.qty), 0);
+  const displayTax = displaySubtotal * 0.08;
+  const displayTotal = displaySubtotal + displayTax - (checkout.discount || 0);
+
   const {
     subtotal,
     tax,
@@ -67,15 +78,15 @@ export function CartScreen({
       paidAt: new Date().toISOString(),
       store: "Smart Market · Quận Bình Thạnh",
       paymentMethod,
-      items: items.map((item) => ({
+      items: displayItems.map((item) => ({
         name: item.name,
         qty: item.qty,
         price: item.price,
       })),
-      subtotal,
-      tax,
+      subtotal: displaySubtotal,
+      tax: displayTax,
       discount,
-      total: cartTotal,
+      total: displayTotal,
       pointsEarned,
       appliedVoucherCode: appliedVoucher?.code,
     };
@@ -103,17 +114,37 @@ export function CartScreen({
           </span>
         )}
       </header>
+
+      {groupCode && (
+        <div className="flex justify-center border-b border-[#E2E8F0] bg-white px-6 py-3">
+          <div className="flex rounded-full bg-[#F1F5F9] p-1">
+            <button
+              onClick={() => setViewMode('shared')}
+              className={`rounded-full px-6 py-2 text-sm font-black transition-colors ${viewMode === 'shared' ? 'bg-[#15803D] text-white shadow-md' : 'text-[#64748B] hover:bg-[#E2E8F0]'}`}
+            >
+              Hóa đơn chung (Cả nhóm)
+            </button>
+            <button
+              onClick={() => setViewMode('personal')}
+              className={`rounded-full px-6 py-2 text-sm font-black transition-colors ${viewMode === 'personal' ? 'bg-[#15803D] text-white shadow-md' : 'text-[#64748B] hover:bg-[#E2E8F0]'}`}
+            >
+              Hóa đơn riêng (Xe của bạn)
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="min-h-0 flex flex-1 gap-6 p-6">
         <div className="relative w-[60%] overflow-hidden rounded-3xl border border-[#E2E8F0] bg-white shadow-inner">
           <div className="absolute right-0 top-4 h-[88%] w-1 rounded-full bg-[#15803D]/60" />
           <div className="h-full overflow-y-auto p-5 pr-8 [scrollbar-width:none]">
-            {items.length === 0 && (
+            {displayItems.length === 0 && (
               <div className="flex h-full flex-col items-center justify-center text-[#64748B]">
                 <ShoppingCart size={56} className="mb-3 opacity-40" />
-                <b>Giỏ hàng đang trống</b>
+                <b>{viewMode === 'shared' ? 'Giỏ hàng chung đang trống' : 'Giỏ hàng cá nhân đang trống'}</b>
               </div>
             )}
-            {items.map((item) => (
+            {displayItems.map((item) => (
               <div
                 key={item.id}
                 className="mb-4 flex gap-5 rounded-2xl border border-[#E2E8F0] bg-white shadow-sm border border-[#E2E8F0] p-4 shadow-sm transition-colors hover:border-[#15803D]/50"
@@ -173,38 +204,33 @@ export function CartScreen({
             </div>
             {[
               ["Tạm tính", subtotal],
-              ["Thuế", tax],
-              ["Giảm giá", -discount],
-            ].map(([label, value]) => (
-              <div
-                key={String(label)}
-                className="mb-3 flex justify-between text-base"
-              >
-                <span className="text-[#475569]">{label}</span>
-                <b>{formatMoney(Number(value))}</b>
-              </div>
-            ))}
-            {appliedVoucher && (
-              <div className="mb-3 flex justify-between text-xs font-bold text-emerald-700">
-                <span>Mã áp dụng</span>
-                <b>{appliedVoucher.code}</b>
+            <div className="flex justify-between text-sm font-bold text-[#64748B]">
+              <span>Tạm tính {viewMode === 'personal' ? '(Riêng)' : ''}</span>
+              <span>{formatMoney(displaySubtotal)}</span>
+            </div>
+            <div className="mt-3 flex justify-between text-sm font-bold text-[#64748B]">
+              <span>Thuế (8%)</span>
+              <span>{formatMoney(displayTax)}</span>
+            </div>
+            {discount > 0 && viewMode === 'shared' && (
+              <div className="mt-3 flex justify-between text-sm font-bold text-[#059669]">
+                <span>Giảm giá</span>
+                <span>-{formatMoney(discount)}</span>
               </div>
             )}
-            <div className="my-5 border-t border-dashed border-[#E2E8F0]" />
-            <div className="flex items-end justify-between">
-              <span className="text-lg font-black">Tổng cộng</span>
-              <b className="text-3xl text-[#15803D]">
-                {formatMoney(cartTotal)}
-              </b>
+            <hr className="my-4 border-[#E2E8F0]" />
+            <div className="flex justify-between text-2xl font-black text-[#15803D]">
+              <span>Tổng cộng</span>
+              <span>{formatMoney(displayTotal)}</span>
             </div>
-            <button
-              onClick={() => setConfirm(true)}
-              disabled={items.length === 0}
-              className="mt-7 flex h-16 w-full items-center justify-center gap-3 rounded-2xl border border-[#15803D] bg-[#15803D] text-xl font-black text-white shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] transition-transform hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Thanh toán <ArrowRight />
-            </button>
           </div>
+          <button
+            onClick={() => setMethods(true)}
+            disabled={displayItems.length === 0}
+            className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#15803D] text-lg font-black text-white shadow-[4px_4px_0px_0px_rgba(51,65,85,0.08)] transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+          >
+            Thanh toán hóa đơn {viewMode === 'personal' ? 'riêng' : 'chung'} <ArrowRight size={20} />
+          </button>
         </aside>
       </div>
       {confirm && (

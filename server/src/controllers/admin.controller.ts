@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
+import { normalizePhoneNumber, normalizeAdminRole } from '../utils/authUtils.js';
 
 export const loginAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -16,7 +17,8 @@ export const loginAdmin = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const admin = await Admin.findOne({ phoneNumber: loginId });
+    const normalizedLoginId = normalizePhoneNumber(loginId);
+    const admin = await Admin.findOne({ phoneNumber: normalizedLoginId });
     if (!admin) {
       res.status(401).json({ message: 'không đúng tên hoặc mật khẩu' });
       return;
@@ -41,7 +43,7 @@ export const loginAdmin = async (req: Request, res: Response): Promise<void> => 
       admin: {
         username: admin.phoneNumber,
         name: admin.name,
-        role: admin.role
+        role: normalizeAdminRole(admin.role)
       }
     });
   } catch (error) {

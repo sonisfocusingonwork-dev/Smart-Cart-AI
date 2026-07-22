@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { AlertTriangle, Wifi } from "lucide-react";
 import { api } from "./api";
+import { useSocket } from "./hooks/useSocket";
 
 import {
   BottomNav,
@@ -183,6 +184,8 @@ export default function App() {
   }, [items, manualList, currentUserId]);
   const [pendingNavTarget, setPendingNavTarget] = useState<StoreProductLocation | null>(null);
 
+  const socket = useSocket();
+
   const sourceIdRef = useRef(
     `smart-cart-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
@@ -279,10 +282,11 @@ export default function App() {
       const hash = window.location.hash;
       if (path === "/admin" || path.startsWith("/admin/") || hash === "#/admin") {
         const storedRole = window.localStorage.getItem("smartcart-user-role");
-        if (storedRole && storedRole.toLowerCase() === "gatewaychecker") {
+        const normalizedStoredRole = (storedRole || "").trim().toLowerCase();
+        if (normalizedStoredRole === "gatewaychecker") {
           setScreenState("gateway");
           navigate("/gateway", { replace: true });
-        } else if (storedRole && ["admin", "RootAdmin", "StoreManager", "Tech", "Security"].includes(storedRole)) {
+        } else if (normalizedStoredRole && ["admin", "rootadmin", "storemanager", "tech", "security"].includes(normalizedStoredRole)) {
           const storedAdminName = window.localStorage.getItem("smartcart-user-name") || "Root Technician";
           setAdminName(storedAdminName);
           setAuthenticated(true);
@@ -375,46 +379,75 @@ export default function App() {
     }
   }, []);
 
-  // Local Syncing via BroadcastChannel
+  // Real-time Syncing via Socket.io
   useEffect(() => {
-    if (!groupCode) return;
+    if (!groupCode || !socket) return;
     
-    // Initialize BroadcastChannel for local real-time sync
-    if (!channelRef.current) {
-      channelRef.current = new BroadcastChannel(`smartcart-group-${groupCode}`);
+    // Đảm bảo luôn join phòng khi component mount hoặc khi socket kết nối lại (ví dụ server restart)
+    const onConnect = () => {
+      socket.emit('joinGroup', { groupId: groupCode, memberInfo: currentCart });
+    };
+    socket.on('connect', onConnect);
+    
+    if (socket.connected) {
+      socket.emit('joinGroup', { groupId: groupCode, memberInfo: currentCart });
     }
 
-    const handleMessage = (event: MessageEvent<SharedGroupSnapshot>) => {
-      const snapshot = event.data;
+    const handleMembersUpdated = (data: { groupId: string, memberInfo?: any }) => {
+      if (data.groupId === groupCode) {
+        // Optimistic update to immediately show new member without waiting for DB or overriding it
+        if (data.memberInfo && data.memberInfo.cartId) {
+          setGroupMembers(prev => {
+            if (!prev.find(m => m.cartId === data.memberInfo.cartId)) {
+              return [...prev, data.memberInfo];
+            }
+            return prev;
+          });
+        }
+        
+        // Fetch latest session from backend to ensure accurate state
+        api.getGroupSession(groupCode).then(session => {
+          setGroupMembers(session.members);
+          const currentIsHost = session.members[0]?.cartId === currentCart.cartId;
+          const statusText = currentIsHost 
+            ? "Đã cập nhật danh sách thành viên (chủ phòng)"
+            : `Đã cập nhật danh sách thành viên`;
+          setSyncStatus(statusText);
+        }).catch(err => console.error("Error fetching updated group session:", err));
+      }
+    };
+
+    const handleCartUpdated = (payload: SharedGroupSnapshot) => {
       if (
-        snapshot &&
-        snapshot.updatedAt > lastSnapshotAtRef.current &&
-        snapshot.sourceId !== sourceIdRef.current
+        payload &&
+        payload.code === groupCode &&
+        payload.updatedAt > lastSnapshotAtRef.current &&
+        payload.sourceId !== sourceIdRef.current
       ) {
         applyingRemoteRef.current = true;
-        lastSnapshotAtRef.current = snapshot.updatedAt;
-        setItems(snapshot.items);
-        setManualList(snapshot.manualList);
-        setGroupMembers(snapshot.members);
+        lastSnapshotAtRef.current = payload.updatedAt;
+        setItems(payload.items);
+        setManualList(payload.manualList);
+        setGroupMembers(payload.members);
         setSyncStatus(
-          `Đã đồng bộ cục bộ lúc ${new Date(snapshot.updatedAt).toLocaleTimeString("vi-VN")}`
+          `Đã đồng bộ cục bộ lúc ${new Date(payload.updatedAt).toLocaleTimeString("vi-VN")}`
         );
       }
     };
 
-    channelRef.current.onmessage = handleMessage;
+    socket.on('groupMembersUpdated', handleMembersUpdated);
+    socket.on('groupCartUpdated', handleCartUpdated);
 
     return () => {
-      if (channelRef.current) {
-        channelRef.current.close();
-        channelRef.current = null;
-      }
+      socket.off('connect', onConnect);
+      socket.off('groupMembersUpdated', handleMembersUpdated);
+      socket.off('groupCartUpdated', handleCartUpdated);
     };
-  }, [groupCode]);
+  }, [groupCode, socket, currentCart]);
 
-  // Push local updates to BroadcastChannel (and optionally backup to BE)
+  // Push local updates to Socket.io (and optionally backup to BE)
   useEffect(() => {
-    if (!groupCode) return;
+    if (!groupCode || !socket) return;
     if (applyingRemoteRef.current) {
       applyingRemoteRef.current = false;
       return;
@@ -428,9 +461,12 @@ export default function App() {
         const snapshot = buildSnapshot(groupCode, groupMembers, items, manualList);
         writeSnapshot(snapshot);
         
-        // Also silently backup to backend so Admin can see it
+        // Emit to socket room instead of BroadcastChannel
+        socket.emit('addItemToGroupCart', { groupId: groupCode, payload: snapshot });
+        
+        // Cập nhật lên backend nhưng chỉ update items và manualList, 
+        // KHÔNG gửi groupMembers (ngăn lỗi ghi đè dữ liệu DB)
         api.updateGroupSession(groupCode, {
-          members: groupMembers,
           items,
           manualList,
           sourceId: sourceIdRef.current
@@ -444,7 +480,7 @@ export default function App() {
 
     const timeout = setTimeout(pushUpdate, 50); // Fast local debounce
     return () => clearTimeout(timeout);
-  }, [groupCode, groupMembers, items, manualList, buildSnapshot, writeSnapshot]);
+  }, [groupCode, groupMembers, items, manualList, buildSnapshot, writeSnapshot, socket]);
 
   const createShoppingGroup = async (name: string) => {
     const code = `SC-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -485,6 +521,10 @@ export default function App() {
       setManualList(sharedList);
       setSyncStatus("Xe chính đã tạo nhóm và đang chờ xe 2, xe 3");
       setScreen("group");
+      
+      if (socket) {
+        socket.emit('joinGroup', { groupId: code, memberInfo: host });
+      }
     } catch (err) {
       alert("Lỗi khi tạo nhóm mua sắm: " + (err as Error).message);
     }
@@ -519,6 +559,10 @@ export default function App() {
       setManualList(session.manualList);
       setSyncStatus(`Đã tham gia nhóm ${code}`);
       setScreen("group");
+      
+      if (socket) {
+        socket.emit('joinGroup', { groupId: code, memberInfo: newMember });
+      }
       return null;
     } catch (err) {
       return (err as Error).message || "Không tìm thấy mã nhóm hoặc nhóm đã đầy.";
@@ -534,6 +578,9 @@ export default function App() {
           groupRole,
           sourceId: sourceIdRef.current
         });
+        if (socket) {
+          socket.emit('leaveGroup', { groupId: code });
+        }
         // NOTE: Not calling api.getCarts()/updateCart() because customers don't have admin tokens.
         // Cart state cleanup is handled server-side inside leaveGroupSession if needed.
       } catch (err) {
@@ -699,7 +746,8 @@ export default function App() {
     setAuthenticated(true);
     setCurrentUserId(user._id || "guest");
     const displayPhone = user.phoneNumber || user.phone;
-    const role = user.role || "customer";
+    const role = (user.role || "customer").toString().trim();
+    const normalizedRole = role.toLowerCase();
     setCurrentCart({
       member: user.fullName || user.name || "Khách hàng",
       cartId: displayPhone ? `Tài khoản ${displayPhone}` : `Mã QR ${user.qrCode}`,
@@ -709,17 +757,17 @@ export default function App() {
     if (typeof window !== "undefined") {
       window.localStorage.setItem("smartcart-current-user-phone", displayPhone || "");
       window.localStorage.setItem("smartcart-current-user-id", user._id || "");
-      window.localStorage.setItem("smartcart-user-role", role);
+      window.localStorage.setItem("smartcart-user-role", normalizedRole);
       window.localStorage.setItem("smartcart-user-name", user.fullName || user.name || "Khách hàng");
-      if (role === "admin" && user.token) {
+      if ((normalizedRole === "admin" || normalizedRole === "rootadmin" || normalizedRole === "storemanager") && user.token) {
         window.localStorage.setItem("smartcart-admin-token", user.token);
       }
     }
 
-    if (role === "admin" || role === "RootAdmin" || role === "StoreManager") {
+    if (normalizedRole === "admin" || normalizedRole === "rootadmin" || normalizedRole === "storemanager") {
       setAdminName(user.fullName || user.name || "Administrator");
       setScreen("admin");
-    } else if (role && role.toLowerCase() === "gatewaychecker") {
+    } else if (normalizedRole === "gatewaychecker") {
       setAdminName(user.fullName || user.name || "Nhân viên cổng");
       setScreen("gateway");
     } else {
@@ -772,14 +820,15 @@ export default function App() {
           <AdminLoginScreen
             back={() => setScreen("login")}
             onLoginSuccess={(name, token, role) => {
+              const normalizedRole = (role || "").toString().trim().toLowerCase();
               if (typeof window !== "undefined") {
                 window.localStorage.setItem("smartcart-admin-token", token);
-                window.localStorage.setItem("smartcart-user-role", role);
+                window.localStorage.setItem("smartcart-user-role", normalizedRole);
                 window.localStorage.setItem("smartcart-user-name", name);
               }
               setAuthenticated(true);
               setAdminName(name);
-              if (role && role.toLowerCase() === "gatewaychecker") {
+              if (normalizedRole === "gatewaychecker") {
                 setScreen("gateway");
               } else {
                 setScreen("admin");
@@ -901,10 +950,14 @@ export default function App() {
             update={update}
             remove={remove}
             go={setScreen}
-            back={back}
-            checkout={checkout}
+            back={() => setScreen("home")}
+            checkout={getCheckoutSummary(items)}
             groupCode={groupCode}
-            onPaymentSuccess={handlePaymentSuccess}
+            currentCartLabel={groupCode ? `${currentCart.member} · ${currentCart.cartId}` : undefined}
+            onPaymentSuccess={(r) => {
+              setCurrentReceipt(r);
+              setScreen("invoice");
+            }}
           />
         );
       case "account":
